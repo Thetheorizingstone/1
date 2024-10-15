@@ -1,0 +1,24 @@
+import math
+
+# Recursive exponentiation function for integers and decimals
+def recursive_exponentiation(value, depth, tolerance=1e-6):
+    if depth == 1:
+        return value
+    
+    # Recursive call to calculate next layer of exponentiation
+    next_value = recursive_exponentiation(value, depth - 1, tolerance)
+    
+    # Result of the current exponentiation step
+    result = value ** next_value
+    
+    # Adjust for precision issues when close to whole numbers
+    if abs(result - round(result)) < tolerance:
+        result = round(result)
+    
+    return result
+
+# Example usage
+value = 1.5  # Allowing decimal input
+depth = 5  # Number of layers of exponentiation
+result = recursive_exponentiation(value, depth)
+print(f"Result of recursive exponentiation: {result}")
