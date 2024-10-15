@@ -1,0 +1,130 @@
+###pip install Flask SQLAlchemy
+
+###pip install Flask-SocketIO pandas numpy scikit-learn
+
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///healthcare_management.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Disease(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    category = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    remedies = db.relationship('Remedy', backref='disease', lazy=True)
+
+class Remedy(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    type_ = db.Column(db.String(50), nullable=False)  # e.g., 'Medication', 'Surgery'
+    description = db.Column(db.Text, nullable=False)
+    success_rate = db.Column(db.Float, nullable=False)
+    disease_id = db.Column(db.Integer, db.ForeignKey('disease.id'), nullable=False)
+
+class Trainer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    specialty = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+
+class HealthCoach(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    certification = db.Column(db.String(100), nullable=False)
+    philosophy = db.Column(db.Text, nullable=False)
+
+class Dietitian(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    focus_area = db.Column(db.String(100), nullable=False)
+    advice = db.Column(db.Text, nullable=False)
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+@app.route('/add_disease', methods=['POST'])
+def add_disease():
+    data = request.json
+    new_disease = Disease(
+        name=data['name'],
+        category=data['category'],
+        description=data['description']
+    )
+    db.session.add(new_disease)
+    db.session.commit()
+    return jsonify({'message': 'Disease added successfully'}), 201
+
+@app.route('/add_remedy/<string:disease_name>', methods=['POST'])
+def add_remedy(disease_name):
+    data = request.json
+    disease = Disease.query.filter_by(name=disease_name).first()
+    if disease:
+        new_remedy = Remedy(
+            name=data['name'],
+            type_=data['type'],
+            description=data['description'],
+            success_rate=data['success_rate'],
+            disease_id=disease.id
+        )
+        db.session.add(new_remedy)
+        db.session.commit()
+        return jsonify({'message': 'Remedy added successfully'}), 201
+    return jsonify({'message': 'Disease not found'}), 404
+
+@app.route('/add_trainer', methods=['POST'])
+def add_trainer():
+    data = request.json
+    new_trainer = Trainer(
+        name=data['name'],
+        specialty=data['specialty'],
+        description=data['description']
+    )
+    db.session.add(new_trainer)
+    db.session.commit()
+    return jsonify({'message': 'Trainer added successfully'}), 201
+
+@app.route('/add_health_coach', methods=['POST'])
+def add_health_coach():
+    data = request.json
+    new_health_coach = HealthCoach(
+        name=data['name'],
+        certification=data['certification'],
+        philosophy=data['philosophy']
+    )
+    db.session.add(new_health_coach)
+    db.session.commit()
+    return jsonify({'message': 'Health coach added successfully'}), 201
+
+@app.route('/add_dietitian', methods=['POST'])
+def add_dietitian():
+    data = request.json
+    new_dietitian = Dietitian(
+        name=data['name'],
+        focus_area=data['focus_area'],
+        advice=data['advice']
+    )
+    db.session.add(new_dietitian)
+    db.session.commit()
+    return jsonify({'message': 'Dietitian added successfully'}), 201
+
+@app.route('/get_healthcare_professionals', methods=['GET'])
+def get_healthcare_professionals():
+    trainers = Trainer.query.all()
+    coaches = HealthCoach.query.all()
+    dietitians = Dietitian.query.all()
+
+    result = {
+        'trainers': [{'name': t.name, 'specialty': t.specialty, 'description': t.description} for t in trainers],
+        'coaches': [{'name': hc.name, 'certification': hc.certification, 'philosophy': hc.philosophy} for hc in coaches],
+        'dietitians': [{'name': d.name, 'focus_area': d.focus_area, 'advice': d.advice} for d in dietitians]
+    }
+
+    return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
