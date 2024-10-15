@@ -1,0 +1,11 @@
+def recursive_exponentiation(x, n_layers):
+    """Recursive function for layered exponentiation."""
+    if n_layers == 1:
+        return x
+    return x ** recursive_exponentiation(x, n_layers - 1)
+
+# Example usage
+x = 2  # Base
+n_layers = 5  # Number of layers
+result = recursive_exponentiation(x, n_layers)
+print(f"Layered exponentiation of {x} for {n_layers} layers: {result}")
