@@ -1,0 +1,21 @@
+from qiskit import QuantumCircuit, Aer, transpile, assemble
+from qiskit.circuit.library import PhaseEstimation
+
+# Quantum circuit initialization
+def layered_exponentiation_qc(x, layers):
+    qc = QuantumCircuit(layers)
+
+    # Initialize the qubit(s) with a classical value x (encoded as a state)
+    qc.initialize([x], 0)
+
+    # Apply recursive exponentiation using phase estimation or controlled-U operations
+    for layer in range(1, layers):
+        # Add an exponentiation operation at each layer (this could be controlled rotations)
+        qc.append(PhaseEstimation(2**layer).to_instruction(), [layer-1, layer])
+
+    return qc
+
+# Example parameters for the circuit
+layers = 4  # Number of recursive layers
+qc = layered_exponentiation_qc(0.5, layers)
+qc.draw('mpl')  # Visualize the quantum circuit
