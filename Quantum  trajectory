@@ -1,0 +1,95 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Constants
+MAX_RECURSION_DEPTH = 100
+DELTA = 1e-6  # Tolerance for convergence
+EPSILON = 1e-6  # Tolerance for rounding
+
+def recursive_to_infinity(x, depth=1):
+    """
+    Recursively calculates the layered exponentiation until convergence.
+    
+    Parameters:
+    x (float): The base value.
+    depth (int): The current recursion depth.
+
+    Returns:
+    float: The converged value after infinite layers.
+    """
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    else:
+        return recursive_to_infinity(next_val, depth + 1)
+
+def adjust_for_nominal_variance(x):
+    """
+    Adjusts the value for nominal variance by rounding if it's close to an integer.
+    
+    Parameters:
+    x (float): The value to adjust.
+
+    Returns:
+    float: The adjusted value.
+    """
+    if abs(x - round(x)) < EPSILON:
+        return round(x)
+    return x
+
+def quantum_deviation(x, variance):
+    """
+    Calculates quantum deviation for a given value and variance.
+    
+    Parameters:
+    x (float): The value to measure.
+    variance (float): The variance to apply.
+
+    Returns:
+    float: The adjusted value after applying quantum deviation.
+    """
+    return x + np.random.normal(0, variance)
+
+def simulate_quantum_trajectory(initial_value, num_steps, variance):
+    """
+    Simulates the quantum trajectory over a specified number of steps.
+    
+    Parameters:
+    initial_value (float): The starting value for the simulation.
+    num_steps (int): The number of steps to simulate.
+    variance (float): The variance for quantum deviation.
+
+    Returns:
+    list: The trajectory values.
+    """
+    trajectory = []
+    current_value = initial_value
+    for _ in range(num_steps):
+        # Calculate the next value in the trajectory
+        current_value = recursive_to_infinity(current_value)
+        # Adjust for nominal variance
+        current_value = adjust_for_nominal_variance(current_value)
+        # Apply quantum deviation
+        current_value = quantum_deviation(current_value, variance)
+        trajectory.append(current_value)
+    return trajectory
+
+# Parameters for the simulation
+initial_value = 1.5  # Starting value
+num_steps = 20  # Number of steps in the trajectory
+variance = 0.05  # Variance for quantum deviation
+
+# Run the simulation
+trajectory = simulate_quantum_trajectory(initial_value, num_steps, variance)
+
+# Visualization
+plt.figure(figsize=(10, 6))
+plt.plot(trajectory, marker='o', linestyle='-')
+plt.title('Quantum Trajectory Simulation')
+plt.xlabel('Step')
+plt.ylabel('Value')
+plt.grid(True)
+plt.show()
