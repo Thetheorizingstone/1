@@ -1,0 +1,52 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Constants
+G = 6.67430e-11  # Gravitational constant (m^3 kg^-1 s^-2)
+c = 3.0e8        # Speed of light (m/s)
+
+# Function to calculate time dilation based on velocity
+def time_dilation(v):
+    """Calculate the time dilation factor based on speed."""
+    return np.sqrt(1 - (v**2 / c**2))
+
+# Function to simulate the flow of time around a stationary subject
+def simulate_time_flow(speed, time_steps):
+    """Simulate how time flows around a stationary observer."""
+    observed_time = []
+    
+    for t in range(time_steps):
+        # Calculate the time dilation factor based on the current speed
+        dilation_factor = time_dilation(speed)
+        
+        # Time observed by the stationary observer
+        observed_time.append(t * dilation_factor)
+        
+        # For visualization, we can simulate a varying speed
+        # (for instance, it could be a function of t, e.g., speed = 0.8c * np.sin(t/10))
+        speed *= 0.99  # Gradually reduce speed for the example
+        
+    return observed_time
+
+# Visualization function
+def plot_time_flow(observed_time):
+    """Plot the perceived time flow for the stationary observer."""
+    plt.figure(figsize=(10, 5))
+    plt.plot(observed_time, label='Observed Time', color='blue')
+    plt.title('Time Flow Around a Stationary Observer')
+    plt.xlabel('Time Steps')
+    plt.ylabel('Observed Time (s)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+# Example usage
+if __name__ == "__main__":
+    speed = 2.5e8  # Initial speed of the surrounding time flow (less than c)
+    time_steps = 100  # Number of time steps to simulate
+    
+    # Simulate the flow of time around a stationary observer
+    observed_time = simulate_time_flow(speed, time_steps)
+    
+    # Plot the observed time
+    plot_time_flow(observed_time)
