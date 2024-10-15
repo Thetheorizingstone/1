@@ -1,0 +1,13 @@
+import math
+
+# Recursive function for layered exponentiation
+def layered_exponentiation(x, n):
+    if n == 1:
+        return x
+    return x ** layered_exponentiation(x, n - 1)
+
+# Example usage
+x = 2
+n = 3  # Number of layers
+result = layered_exponentiation(x, n)
+print(f"Layered exponentiation of {x} with {n} layers: {result}")
