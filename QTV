@@ -1,0 +1,168 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Constants
+MAX_RECURSION_DEPTH = 100
+DELTA = 1e-6  # Tolerance for convergence
+EPSILON = 1e-6  # Tolerance for rounding
+
+def recursive_to_infinity(x, depth=1):
+    """
+    Recursively calculates the layered exponentiation until convergence.
+    
+    Parameters:
+    x (float): The base value.
+    depth (int): The current recursion depth.
+
+    Returns:
+    float: The converged value after infinite layers.
+    """
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    else:
+        return recursive_to_infinity(next_val, depth + 1)
+
+def adjust_for_nominal_variance(x):
+    """
+    Adjusts the value for nominal variance by rounding if it's close to an integer.
+    
+    Parameters:
+    x (float): The value to adjust.
+
+    Returns:
+    float: The adjusted value.
+    """
+    if abs(x - round(x)) < EPSILON:
+        return round(x)
+    return x
+
+def quantum_deviation(x, variance):
+    """
+    Calculates quantum deviation for a given value and variance.
+    
+    Parameters:
+    x (float): The value to measure.
+    variance (float): The variance to apply.
+
+    Returns:
+    float: The adjusted value after applying quantum deviation.
+    """
+    return x + np.random.normal(0, variance)
+
+def external_potential(x, force):
+    """
+    Applies an external potential effect to the quantum state.
+    
+    Parameters:
+    x (float): The quantum state.
+    force (float): The external force applied.
+
+    Returns:
+    float: The adjusted state after applying the external potential.
+    """
+    return x + force * np.sin(x)  # Example external potential effect
+
+def schrodinger_equation(psi, potential, time):
+    """
+    Computes the next state of a quantum system using the Schrödinger equation.
+    
+    Parameters:
+    psi (float): Current state.
+    potential (float): Current potential.
+    time (float): Time step for evolution.
+
+    Returns:
+    float: Next state after evolution.
+    """
+    h_bar = 1  # Reduced Planck's constant
+    return psi - (h_bar * potential * time)
+
+def qubit_to_classical(qubit_value):
+    """
+    Converts a qubit value to classical data.
+    
+    Parameters:
+    qubit_value (complex): The qubit value.
+
+    Returns:
+    float: The classical representation of the qubit.
+    """
+    return np.abs(qubit_value) ** 2  # Probability amplitude to classical probability
+
+def simulate_quantum_trajectory(initial_value, num_steps, variance, external_force):
+    """
+    Simulates the quantum trajectory over a specified number of steps.
+    
+    Parameters:
+    initial_value (float): The starting value for the simulation.
+    num_steps (int): The number of steps to simulate.
+    variance (float): The variance for quantum deviation.
+    external_force (float): The external force applied.
+
+    Returns:
+    list: The trajectory values and quantum vectors.
+    """
+    trajectory = []
+    quantum_vectors = []
+    current_value = initial_value
+    
+    for _ in range(num_steps):
+        # Apply external potential
+        current_value = external_potential(current_value, external_force)
+        
+        # Calculate the next value in the trajectory using Schrödinger equation
+        potential = quantum_deviation(current_value, variance)
+        current_value = schrodinger_equation(current_value, potential, 0.1)  # Time step
+        
+        # Convert to classical data
+        classical_value = qubit_to_classical(current_value)
+        
+        # Apply recursive growth and nominal variance adjustment
+        current_value = recursive_to_infinity(classical_value)
+        current_value = adjust_for_nominal_variance(current_value)
+        
+        # Apply quantum deviation
+        current_value = quantum_deviation(current_value, variance)
+        
+        # Store trajectory and quantum vector
+        trajectory.append(current_value)
+        if len(trajectory) > 1:
+            # Calculate quantum vector as the difference between current and previous trajectory value
+            quantum_vector = trajectory[-1] - trajectory[-2]
+            quantum_vectors.append(quantum_vector)
+        else:
+            quantum_vectors.append(0)  # First quantum vector is zero since there's no previous state
+
+    return trajectory, quantum_vectors
+
+# Parameters for the simulation
+initial_value = 1.5  # Starting value
+num_steps = 20  # Number of steps in the trajectory
+variance = 0.05  # Variance for quantum deviation
+external_force = 0.1  # External force applied
+
+# Run the simulation
+trajectory, quantum_vectors = simulate_quantum_trajectory(initial_value, num_steps, variance, external_force)
+
+# Visualization
+plt.figure(figsize=(12, 6))
+plt.subplot(2, 1, 1)
+plt.plot(trajectory, marker='o', linestyle='-', label='Quantum Trajectory')
+plt.title('Quantum Trajectory Simulation')
+plt.xlabel('Step')
+plt.ylabel('Quantum State Value')
+plt.grid(True)
+
+plt.subplot(2, 1, 2)
+plt.plot(quantum_vectors, marker='o', linestyle='-', label='Quantum Vectors (Space Between States)', color='orange')
+plt.title('Quantum Vectors Overview')
+plt.xlabel('Step')
+plt.ylabel('Quantum Vector Value')
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
