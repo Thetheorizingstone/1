@@ -1,0 +1,10 @@
+
+\begin{align*}
+& i\hbar\frac{\partial \Psi(x,t)}{\partial t} = \hat{H}\Psi(x,t) \\
+& f_{n+1}(x) = x^{f_n(x)} \\
+& QD = \sigma^2 + \epsilon \\
+& f_{\infty}(x) = x^{x^{x^{\cdots}}} \\
+& V(x) = \sum_{i=1}^{n}V_i(x) \\
+& | \Psi \rangle = \alpha |0\rangle + \beta |1\rangle \quad \text{where } |\alpha|^2 + |\beta|^2 = 1 \\
+& QV = \Delta x + \Delta t
+\end{align*}
