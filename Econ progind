@@ -130,3 +130,113 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+class Scenario:
+    """Class to define different economic scenarios."""
+    
+    def __init__(self, description, government_spending, tax_revenue):
+        self.description = description
+        self.government_spending = government_spending
+        self.tax_revenue = tax_revenue
+
+    def run_scenario(self, model):
+        """Run the economic model for this scenario."""
+        model.update_economy(self.government_spending, self.tax_revenue)
+        return model.run_analysis(current_cpi, previous_cpi, actual_output)
+
+
+
+from sklearn.linear_model import LinearRegression
+
+class PredictiveModel:
+    """Class for predictive modeling of economic indicators."""
+    
+    def __init__(self):
+        self.model = LinearRegression()
+        self.data = []  # List to store historical data for training
+
+    def train(self, features, target):
+        """Train the predictive model on historical data."""
+        self.model.fit(features, target)
+
+    def predict(self, new_data):
+        """Predict future outcomes based on new data."""
+        return self.model.predict(new_data)
+
+
+
+
+import tkinter as tk
+
+class EconomicApp:
+    """Main application class for the economic model."""
+    
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Economic Model")
+        
+        # Input Fields
+        self.spending_label = tk.Label(root, text="Government Spending:")
+        self.spending_label.pack()
+        self.spending_entry = tk.Entry(root)
+        self.spending_entry.pack()
+
+        self.revenue_label = tk.Label(root, text="Tax Revenue:")
+        self.revenue_label.pack()
+        self.revenue_entry = tk.Entry(root)
+        self.revenue_entry.pack()
+        
+        self.run_button = tk.Button(root, text="Run Analysis", command=self.run_analysis)
+        self.run_button.pack()
+        
+    def run_analysis(self):
+        """Run the economic analysis based on user input."""
+        spending = float(self.spending_entry.get())
+        revenue = float(self.revenue_entry.get())
+        # Execute the analysis logic here
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = EconomicApp(root)
+    root.mainloop()
+
+
+
+
+import sqlite3
+
+class EconomicDatabase:
+    """Class to manage economic data in a SQLite database."""
+    
+    def __init__(self, db_name):
+        self.connection = sqlite3.connect(db_name)
+        self.cursor = self.connection.cursor()
+        self.create_table()
+
+    def create_table(self):
+        """Create a table for economic indicators."""
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS indicators (
+                                id INTEGER PRIMARY KEY,
+                                gdp REAL,
+                                debt REAL,
+                                inflation_rate REAL)''')
+        self.connection.commit()
+
+    def insert_data(self, gdp, debt, inflation_rate):
+        """Insert new data into the database."""
+        self.cursor.execute("INSERT INTO indicators (gdp, debt, inflation_rate) VALUES (?, ?, ?)",
+                            (gdp, debt, inflation_rate))
+        self.connection.commit()
+
+    def retrieve_data(self):
+        """Retrieve all data from the database."""
+        self.cursor.execute("SELECT * FROM indicators")
+        return self.cursor.fetchall()
+
+
+
+
+
+
