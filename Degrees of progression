@@ -1,0 +1,16 @@
+import math
+
+# Function to calculate n-degree recursive exponential progression
+def recursive_exponentiation(a, b, x, degrees):
+    if degrees == 0:
+        return a * math.exp(b * x)
+    return math.exp(recursive_exponentiation(a, b, x, degrees - 1))
+
+# Example usage
+a = 1      # Initial value
+b = 0.05   # Growth rate
+x = 10     # Time or other variable
+degrees = 3  # Number of progressive degrees
+
+result = recursive_exponentiation(a, b, x, degrees)
+print(f"Result after {degrees} degrees of progression: {result}")
