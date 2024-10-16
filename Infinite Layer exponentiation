@@ -1,0 +1,23 @@
+import numpy as np
+
+# Function to simulate 'infinite' layer exponentiation with a precision threshold
+def infinite_layer_exponentiation(base_value, max_layers=1000, precision_threshold=1e-10):
+    current_value = base_value
+    previous_value = 0
+    layer = 0
+    
+    while layer < max_layers and abs(current_value - previous_value) > precision_threshold:
+        previous_value = current_value
+        current_value = np.exp(current_value)
+        layer += 1
+        print(f"Layer {layer}: {current_value}")
+    
+    return current_value, layer
+
+# Example usage with a base value
+base_value = 1.5
+final_value, total_layers = infinite_layer_exponentiation(base_value)
+
+print(f"Final value after {total_layers} layers: {final_value}")
+
+
