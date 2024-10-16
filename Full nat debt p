@@ -1,3 +1,47 @@
+pip install flask numpy pandas scipy
+
+python national_debt_model.py
+
+http://127.0.0.1:5000/project_debt
+
+{
+  "initial_debt": 32000000000000,   # $32 trillion
+  "deficit_rate": 0.05,             # 5% of GDP deficit
+  "interest_rate": 0.03,            # 3% interest rate
+  "years": 10                       # Over 10 years
+}
+
+
+
+
+{
+  "final_debt": 52000000000000,      # Projected national debt after 10 years
+  "debt_history": [32e12, 34e12, ...]  # Debt history for each year
+}
+
+
+
+
+http://127.0.0.1:5000/optimize_policy
+
+{
+  "initial_debt": 32000000000000,   # $32 trillion
+  "interest_rate": 0.03,            # 3% interest rate
+  "years": 10                       # Over 10 years
+}
+
+
+{
+  "optimal_tax_rate": 0.03,         # Optimal 3% tax increase
+  "optimal_spending_cut": 0.02      # Optimal 2% spending cut
+}
+
+
+
+
+
+
+
 import numpy as np
 import pandas as pd
 from flask import Flask, request, jsonify
