@@ -1,0 +1,75 @@
+from fpdf import FPDF
+
+# Create instance of FPDF class
+pdf = FPDF()
+
+# Add a page
+pdf.add_page()
+
+# Set font
+pdf.set_font("Arial", size = 12)
+
+# Add title
+pdf.cell(200, 10, txt = "Travis Raymond-Charlie Stone Resume", ln = True, align = 'C')
+
+# Add content
+resume_text = """
+Travis Raymond-Charlie Stone
+Location: San Francisco, CA
+Compensation: Will trade salary for equity, benefits, Roth IRA contributions, and other pay-it-forward investing initiatives.
+
+Professional Summary:
+Experienced data scientist, athletic trainer, and healthcare professional with a hands-on background in data-driven medicine, evidence-based training, client management, and prompt engineering. Extensive experience in military service, firefighting, and survival tactics. Proven ability to manage ambiguous research environments, optimize data solutions, and enhance data throughput and quality. Volunteer work includes community outreach and environmental conservation efforts, highlighting a strong commitment to humanitarian and environmental causes.
+
+Key Skills:
+- Data Quality & Throughput Optimization
+- Human-Machine Interaction
+- Prompt Engineering & Software Engineering
+- Statistical Significance & Critical Analysis
+- SQL, Python, Data-Driven Medicine
+- NLP, AI Model Evaluation
+- Business Ownership & Management
+- Athlete & Client Management
+- Survival Tactics & Paramedicine
+- Community Outreach & Environmental Conservation
+
+Professional Experience:
+Self-Employed | Data Scientist, Athletic Trainer, Personal Trainer
+- Provide data-driven athletic training and personal coaching services, focusing on physiology, anatomy, exercise, and client motivation.
+- Manage client relationships, sales, customer service, and program development for personalized training programs.
+- Develop advanced data collection and analysis frameworks for optimizing athlete performance and client health outcomes.
+- Offer prompt engineering and web design services, contributing to multiple open-source software projects and social science experiments.
+- Volunteer for various community initiatives, including environmental conservation, homeless outreach, and charitable contributions.
+
+USDA FS Dalton Hotshots | Helicopter Crew Member, Helitack Rappel Certified
+- Operated helicopter dispatch and ground communications during wildfire operations, coordinating with emergency teams and safety personnel.
+- Served as an engine crew member, utilizing paramedic skills and wilderness survival training to support firefighting efforts.
+- Certified in Helitack rappel techniques for aerial firefighting and rescue missions.
+
+Combat Medic & Tactical Operations | United States Military
+- Specialized in combat medic operations, parachuting, and high-stakes rescue missions.
+- Certified in PHTLS, PALS, ACLS, CPR, and hypobaric physiology.
+- Trained in survival, evasion, resistance, and escape tactics, as well as aircraft water survival.
+
+Part-Time Roles & Volunteering:
+- Bouncer, Dirty Bourbon Country Bar
+- Spin Class Coach & DJ Assistant
+- Church Audio-Visual Programming Volunteer
+- Environmental Volunteer: Regularly paddle boards to clean lakes, removing fishing lines and trash, and participates in morning walks to pick up litter.
+- Homeless Outreach: Provides support to the less fortunate through feeding, cleaning, and clothing assistance.
+
+Education:
+- Bachelor’s Degree in Athletic Training, Focus on Evidence-Based Medicine [University Name]
+- Graduate Studies in Chiropractic Medicine [University Name]
+
+Certifications:
+- Helitack Rappel Certified, Static Line Parachuting, Hypobaric Physiology, SCUBA Diving
+- PHTLS, ACLS, CPR, Combat Medic Certified
+"""
+
+# Add text to the PDF
+pdf.multi_cell(0, 10, resume_text)
+
+# Save the PDF to a file
+pdf_output_path = "/mnt/data/Travis_Raymond-Charlie_Stone_Resume_v3.pdf"
+pdf.output(pdf_output_path)
