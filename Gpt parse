@@ -1,0 +1,64 @@
+import re
+from difflib import SequenceMatcher
+
+# Function to extract sections from a resume text
+def extract_sections(resume_text):
+    sections = {}
+    
+    # Use regex to extract each section (this is a simple approach)
+    sections['summary'] = re.findall(r'Professional Summary[\s\S]*?(?=\n\n)', resume_text)
+    sections['skills'] = re.findall(r'Key Skills[\s\S]*?(?=\n\n)', resume_text)
+    sections['experience'] = re.findall(r'Professional Experience[\s\S]*?(?=\n\n)', resume_text)
+    sections['education'] = re.findall(r'Education[\s\S]*?(?=\n\n)', resume_text)
+    sections['certifications'] = re.findall(r'Certifications[\s\S]*?(?=\n\n)', resume_text)
+    
+    return sections
+
+# Function to calculate similarity between two strings
+def similarity_ratio(text1, text2):
+    return SequenceMatcher(None, text1, text2).ratio()
+
+# Function to compare two resumes
+def compare_resumes(resume_1, resume_2):
+    resume_1_sections = extract_sections(resume_1)
+    resume_2_sections = extract_sections(resume_2)
+    
+    comparison = {}
+    
+    # Compare each section
+    for section in resume_1_sections.keys():
+        if resume_1_sections[section] and resume_2_sections[section]:
+            comparison[section] = similarity_ratio(
+                ''.join(resume_1_sections[section]), 
+                ''.join(resume_2_sections[section])
+            )
+        else:
+            comparison[section] = "Section missing in one of the resumes"
+    
+    return comparison
+
+# Example input: Your resume and user resume as plain text
+your_resume = """Travis Raymond-Charlie Stone
+Location: San Francisco, CA
+Compensation: Will trade salary for equity..."""
+user_resume = """User's Resume Text Here"""
+
+comparison_result = compare_resumes(your_resume, user_resume)
+for section, score in comparison_result.items():
+    print(f"{section}: {score * 100:.2f}% similarity")
+
+
+# Simulated GPT-based analysis (assuming ChatGPT is integrated)
+def gpt_feedback(section, similarity_score):
+    if similarity_score > 0.8:
+        return f"Your {section} section is highly similar to the reference."
+    elif similarity_score > 0.5:
+        return f"Your {section} section has some overlap but could benefit from more alignment with key areas."
+    else:
+        return f"Your {section} section has low similarity. Consider revising to focus more on specific skills or experiences."
+
+# Example of using GPT for feedback
+for section, score in comparison_result.items():
+    if isinstance(score, float):  # If the section exists and has a score
+        feedback = gpt_feedback(section, score)
+        print(f"{section}: {feedback}")
