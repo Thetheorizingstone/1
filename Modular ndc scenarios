@@ -1,0 +1,177 @@
+pip install flask flask-socketio pycryptodome numpy
+
+from Crypto.Cipher import AES
+import base64
+import os
+
+# Key must be 16, 24, or 32 bytes long
+encryption_key = os.urandom(32)
+
+# Encrypt message
+def encrypt_message(message):
+    cipher = AES.new(encryption_key, AES.MODE_EAX)
+    nonce = cipher.nonce
+    ciphertext, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
+    return base64.b64encode(nonce + ciphertext).decode('utf-8')
+
+# Decrypt message
+def decrypt_message(encrypted_message):
+    encrypted_message = base64.b64decode(encrypted_message)
+    nonce = encrypted_message[:16]
+    ciphertext = encrypted_message[16:]
+    cipher = AES.new(encryption_key, AES.MODE_EAX, nonce=nonce)
+    decrypted_message = cipher.decrypt(ciphertext).decode('utf-8')
+    return decrypted_message
+
+from flask import Flask, request, jsonify, render_template
+from flask_socketio import SocketIO, emit
+from threading import Lock
+
+app = Flask(__name__)
+socketio = SocketIO(app)
+thread = None
+thread_lock = Lock()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Receive simulation parameters from user via secure message
+@socketio.on('send_message')
+def handle_message(data):
+    encrypted_message = data['message']
+    decrypted_message = decrypt_message(encrypted_message)
+
+    # Process the simulation with the provided parameters
+    message_data = eval(decrypted_message)  # Assuming JSON input as string
+    
+    debt = message_data['debt']
+    inflation = message_data['inflation']
+    rate = message_data['rate']
+    monetary_supply = message_data['monetary_supply']
+    time_periods = message_data['time_periods']
+
+    # Run the simulation and send results back
+    results = quantum_task_manager(debt, inflation, rate, monetary_supply, time_periods)
+    encrypted_result = encrypt_message(str(results))
+    
+    emit('receive_message', {'message': encrypted_result})
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fed Simulation Dashboard</title>
+</head>
+<body>
+    <h1>Fed Simulation Secure Messenger</h1>
+
+    <form id="send-message-form">
+        <label for="debt">Debt:</label>
+        <input type="number" id="debt" name="debt"><br><br>
+
+        <label for="inflation">Inflation Rate:</label>
+        <input type="number" id="inflation" name="inflation"><br><br>
+
+        <label for="rate">Interest Rate:</label>
+        <input type="number" id="rate" name="rate"><br><br>
+
+        <label for="monetary_supply">Monetary Supply:</label>
+        <input type="number" id="monetary_supply" name="monetary_supply"><br><br>
+
+        <label for="time_periods">Time Periods:</label>
+        <input type="number" id="time_periods" name="time_periods"><br><br>
+
+        <input type="submit" value="Send">
+    </form>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        var socket = io();
+
+        document.getElementById('send-message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            let debt = document.getElementById('debt').value;
+            let inflation = document.getElementById('inflation').value;
+            let rate = document.getElementById('rate').value;
+            let monetary_supply = document.getElementById('monetary_supply').value;
+            let time_periods = document.getElementById('time_periods').value;
+
+            let message = {
+                'debt': debt,
+                'inflation': inflation,
+                'rate': rate,
+                'monetary_supply': monetary_supply,
+                'time_periods': time_periods
+            };
+
+            // Send encrypted message
+            let encryptedMessage = btoa(JSON.stringify(message));  // Temporary encryption method
+            socket.emit('send_message', { message: encryptedMessage });
+        });
+
+        // Receive results
+        socket.on('receive_message', function(data) {
+            let encryptedMessage = data.message;
+            let decryptedMessage = atob(encryptedMessage);  // Temporary decryption method
+            
+            document.getElementById('results').innerText = decryptedMessage;
+        });
+    </script>
+</body>
+</html>
+
+
+
+@socketio.on('run_stress_test')
+def handle_stress_test(data):
+    encrypted_message = data['message']
+    decrypted_message = decrypt_message(encrypted_message)
+
+    message_data = eval(decrypted_message)  # Assuming JSON input as string
+    
+    initial_debt = message_data['initial_debt']
+    initial_inflation = message_data['initial_inflation']
+    rates = message_data['rates']
+    monetary_supplies = message_data['monetary_supplies']
+    time_periods = message_data['time_periods']
+
+    # Run stress tests with high load
+    stress_results = stress_test(initial_debt, initial_inflation, rates, monetary_supplies, time_periods)
+    
+    encrypted_result = encrypt_message(str(stress_results))
+    
+    emit('stress_test_results', {'message': encrypted_result})
+
+
+FROM python:3.9
+WORKDIR /app
+COPY . /app
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
