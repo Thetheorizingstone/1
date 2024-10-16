@@ -1,0 +1,63 @@
+def market_collapse(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if next_val > CRASH_THRESHOLD:
+        next_val = next_val * DECAY_FACTOR
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    return market_collapse(next_val, depth + 1)
+
+def disease_outbreak(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if next_val > OUTBREAK_THRESHOLD:
+        next_val = next_val * CONTAINMENT_FACTOR
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    return disease_outbreak(next_val, depth + 1)
+
+def population_decline(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if next_val < MIN_POPULATION_THRESHOLD:
+        next_val = next_val * DECLINE_FACTOR
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    return population_decline(next_val, depth + 1)
+
+
+def energy_usage(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev * EFFICIENCY_FACTOR
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    return energy_usage(next_val, depth + 1)
+
+
+
+def supply_chain_demand(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if next_val > BOTTLENECK_THRESHOLD:
+        next_val = next_val * BOTTLENECK_FACTOR
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    return supply_chain_demand(next_val, depth + 1)
+
+
+
+
+
+
+
+
