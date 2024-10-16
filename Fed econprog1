@@ -1,0 +1,101 @@
+import numpy as np
+
+class EconomicIndicators:
+    """Class to manage economic indicators such as GDP, debt, and inflation."""
+    
+    def __init__(self):
+        self.debt = 0.0  # National debt
+        self.gdp = 0.0  # GDP
+        self.inflation_rate = 0.0  # Current inflation rate
+
+    def update_debt(self, deficit):
+        """Update national debt based on the calculated deficit."""
+        self.debt += deficit
+
+    def calculate_inflation(self, cpi_current, cpi_previous):
+        """Calculate current inflation rate based on CPI."""
+        try:
+            self.inflation_rate = (cpi_current - cpi_previous) / cpi_previous * 100
+            return self.inflation_rate
+        except ZeroDivisionError:
+            print("Error: Previous CPI cannot be zero.")
+            return None
+
+    def debt_to_gdp_ratio(self):
+        """Calculate Debt-to-GDP Ratio."""
+        return (self.debt / self.gdp) * 100 if self.gdp > 0 else float('inf')
+
+class FedPolicy:
+    """Class for managing Federal Reserve policies."""
+    
+    def __init__(self, indicators):
+        self.indicators = indicators
+        self.interest_rate = 0.05  # Initial nominal interest rate
+        self.target_inflation = 2.0  # Target inflation rate in percent
+        self.potential_growth_rate = 0.03  # Potential output growth rate
+
+    def apply_taylor_rule(self, actual_output):
+        """Adjust interest rate using the Taylor rule."""
+        output_gap = (actual_output - self.potential_output()) / self.potential_output()
+        self.interest_rate = 0.02 + self.indicators.inflation_rate + output_gap
+        print(f"Updated Interest Rate: {self.interest_rate:.2%}")
+
+    def potential_output(self):
+        """Calculate potential output using exponential growth."""
+        return self.indicators.gdp * np.exp(self.potential_growth_rate)
+
+class EconomicModel:
+    """Main economic model to simulate fiscal policies and outcomes."""
+    
+    def __init__(self):
+        self.indicators = EconomicIndicators()
+        self.policy = FedPolicy(self.indicators)
+
+    def update_economy(self, government_spending, tax_revenue):
+        """Update the economy by calculating the deficit and updating debt."""
+        deficit = self.calculate_deficit(government_spending, tax_revenue)
+        self.indicators.update_debt(deficit)
+        print(f"Updated Debt: {self.indicators.debt:.2f}")
+
+    def calculate_deficit(self, spending, revenue):
+        """Calculate the deficit based on spending and revenue."""
+        return spending - revenue
+
+    def run_analysis(self, cpi_current, cpi_previous, actual_output):
+        """Run full economic analysis with given parameters."""
+        inflation_rate = self.indicators.calculate_inflation(cpi_current, cpi_previous)
+        print(f"Current Inflation Rate: {inflation_rate:.2f}%")
+        
+        debt_gdp_ratio = self.indicators.debt_to_gdp_ratio()
+        print(f"Current Debt to GDP Ratio: {debt_gdp_ratio:.2f}%")
+        
+        self.policy.apply_taylor_rule(actual_output)
+        
+        predicted_deficit = self.run_predictive_analysis()
+        print(f"Predicted Deficit: {predicted_deficit:.2f}")
+
+    def run_predictive_analysis(self):
+        """Run a predictive analysis to estimate future deficits."""
+        predicted_deficit = (0.01 * self.indicators.gdp +
+                              0.1 * self.policy.interest_rate -
+                              0.5 * self.indicators.inflation_rate)
+        return predicted_deficit
+
+def main():
+    """Main function to run the economic model."""
+    model = EconomicModel()
+
+    # Example inputs for testing the model
+    model.indicators.gdp = 20000  # Set initial GDP
+    model.update_economy(government_spending=5000, tax_revenue=4500)
+
+    # Example inflation calculation inputs
+    current_cpi = 110
+    previous_cpi = 108
+    actual_output = 19000  # Example actual output
+
+    # Run the full analysis
+    model.run_analysis(current_cpi, previous_cpi, actual_output)
+
+if __name__ == "__main__":
+    main()
