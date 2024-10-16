@@ -1,0 +1,27 @@
+import math
+
+# Recursive function for layered exponentiation
+def recursive_exponentiation(x, layers, threshold=1e-10):
+    if layers == 1:
+        return x  # Base case
+    else:
+        # Recursively calculate the exponentiation
+        prev_value = recursive_exponentiation(x, layers - 1)
+        result = x ** prev_value
+        
+        # Optional: If the result converges, we can stop early
+        if math.isclose(result, prev_value, abs_tol=threshold):
+            return result
+        return result
+
+# Wrapper function to handle inputs modularly
+def modular_recursive_exponentiation(x, max_layers=100):
+    print(f"Calculating recursive exponentiation for x = {x} with up to {max_layers} layers.")
+    return recursive_exponentiation(x, max_layers)
+
+# Example usage
+x = 1.5  # Input value
+layers = 10  # Number of layers
+result = modular_recursive_exponentiation(x, layers)
+
+print(f"Result of recursive exponentiation: {result}")
