@@ -1,0 +1,10 @@
+def recursive_exponentiation(x, n):
+    if n == 1:
+        return x
+    return x ** recursive_exponentiation(x, n - 1)
+
+# Example usage
+n_layers = 5
+x_value = 2  # For example, you can replace this with GDP or medical data
+result = recursive_exponentiation(x_value, n_layers)
+print(f"Recursive exponentiation result for {x_value}^{n_layers}: {result}")
