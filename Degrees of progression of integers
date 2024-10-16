@@ -1,0 +1,16 @@
+import math
+
+# Function to calculate n-degree recursive exponential progression with integers
+def recursive_exponentiation_with_integers(a, b, integers, degrees):
+    if degrees == 0:
+        return a * math.exp(b)
+    return math.exp(integers[degrees-1] * recursive_exponentiation_with_integers(a, b, integers, degrees - 1))
+
+# Example usage with integers
+a = 1          # Initial value
+b = 0.05       # Base growth rate
+integers = [2, 3, 4]  # Integer progression steps
+degrees = len(integers)  # Number of degrees of progression
+
+result = recursive_exponentiation_with_integers(a, b, integers, degrees)
+print(f"Result after {degrees} degrees of progression with integers: {result}")
