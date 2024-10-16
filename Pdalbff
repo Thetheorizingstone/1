@@ -1,0 +1,68 @@
+http {
+    upstream flask_app {
+        server app1:5000;
+        server app2:5000;
+        server app3:5000;
+    }
+
+    server {
+        listen 80;
+        location / {
+            proxy_pass http://flask_app;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+
+from celery import Celery
+
+# Initialize Celery
+celery = Celery('tasks', broker='redis://localhost:6379/0')
+
+@celery.task
+def calculate_tax_async(units_owned, fully_occupied_units, empty_units, months_vacant):
+    # Your calculation logic
+    return total_due
+
+
+
+
+@app.route('/tax_calculation/<task_id>', methods=['GET'])
+@jwt_required()
+def get_tax_calculation(task_id):
+    result = calculate_tax_async.AsyncResult(task_id)
+    
+    if result.state == 'PENDING':
+        return jsonify({'status': 'Pending...'}), 202
+    elif result.state == 'FAILURE':
+        # Fallback logic
+        cached_result = cache.get(task_id)
+        if cached_result:
+            return jsonify({'status': 'Completed from cache', 'total_due': cached_result})
+        return jsonify({'status': 'Failed', 'error': str(result.info)}), 500
+    else:
+        return jsonify({'status': 'Completed', 'total_due': result.result})
+
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    # Log the error
+    app.logger.error(f'Error: {str(e)}')
+
+    # Collect feedback for monitoring
+    feedback = {
+        'error': str(e),
+        'endpoint': request.path,
+        'method': request.method,
+        'timestamp': datetime.utcnow(),
+    }
+    # Store feedback in a monitoring system or log file
+    save_feedback(feedback)
+
+    return jsonify({'message': 'An internal error occurred.'}), 500
+
+def save_feedback(feedback):
+    # Here you can implement logic to save feedback to a database or monitoring tool
+    pass
