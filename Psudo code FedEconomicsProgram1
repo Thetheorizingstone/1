@@ -1,0 +1,40 @@
+class FedEconomicProgram:
+    def __init__(self):
+        self.debt = 0
+        self.gdp = 0
+        self.inflation_target = 2.0  # Target inflation rate
+        self.interest_rate = 0.05  # Initial interest rate
+
+    def update_economy(self, government_spending, tax_revenue):
+        deficit = self.calculate_deficit(government_spending, tax_revenue)
+        self.debt += deficit  # Update national debt
+
+    def calculate_deficit(self, spending, revenue):
+        return spending - revenue
+
+    def calculate_inflation(self, cpi_current, cpi_previous):
+        return (cpi_current - cpi_previous) / cpi_previous * 100
+
+    def debt_to_gdp_ratio(self):
+        return (self.debt / self.gdp) * 100
+
+    def apply_taylor_rule(self, actual_output):
+        output_gap = (actual_output - self.potential_output()) / self.potential_output()
+        self.interest_rate = self.interest_rate + self.inflation_rate + output_gap
+
+    def potential_output(self):
+        return self.gdp * 0.95  # Placeholder for potential output
+
+    def run_predictive_analysis(self, gdp, interest_rate, inflation):
+        # Placeholder for predictive regression model
+        pass
+
+# Instantiate the program
+fed_program = FedEconomicProgram()
+
+# Example updates
+fed_program.update_economy(government_spending=5000, tax_revenue=4500)
+inflation_rate = fed_program.calculate_inflation(cpi_current=110, cpi_previous=108)
+debt_gdp_ratio = fed_program.debt_to_gdp_ratio()
+
+print(f"Current Debt to GDP Ratio: {debt_gdp_ratio}%")
