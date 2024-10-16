@@ -189,3 +189,25 @@ def handle_error(e):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
+
+@cache.cached(timeout=300, query_string=True)
+@app.route('/cached_endpoint', methods=['GET'])
+def cached_endpoint():
+    # Some expensive computation
+    return jsonify(result='Cached result')
+
+
+
+import unittest
+
+class TestLoadCalculation(unittest.TestCase):
+    def test_calculate_load(self):
+        self.assertAlmostEqual(calculate_load(1), 1)
+        self.assertGreater(calculate_load(10), calculate_load(1))
+
+if __name__ == '__main__':
+    unittest.main()
