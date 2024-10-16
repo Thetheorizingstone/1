@@ -1,0 +1,59 @@
+import tensorflow as tf
+from tensorflow.keras import layers
+
+model = tf.keras.Sequential()
+# Recursively add exponentially deeper layers
+for i in range(1, 6):
+    model.add(layers.Dense(2**i, activation='relu'))  # Exponentially increasing layer sizes
+
+model.add(layers.Dense(1, activation='sigmoid'))  # Binary classification output layer
+model.compile(optimizer='adam', loss='binary_crossentropy')
+
+from qiskit import QuantumCircuit, Aer, execute
+
+def apply_recursive_gates(circuit, qubit, depth):
+    if depth == 0:
+        return
+    circuit.h(qubit)  # Apply Hadamard gate
+    apply_recursive_gates(circuit, qubit, depth-1)  # Recursive layer
+ 
+qc = QuantumCircuit(1)  # 1 qubit
+apply_recursive_gates(qc, 0, 4)  # Recursive depth of 4
+qc.measure_all()
+
+simulator = Aer.get_backend('qasm_simulator')
+result = execute(qc, simulator).result()
+print(result.get_counts())
+
+
+def epidemic_growth(initial_infected, growth_rate, time_steps):
+    infected = initial_infected
+    for t in range(time_steps):
+        infected *= growth_rate
+        print(f"Day {t}: Infected population = {infected}")
+    return infected
+
+# Example: Start with 10 infected people, growth rate of 1.1, over 30 days
+epidemic_growth(10, 1.1, 30)
+
+
+def recursive_diagnosis(symptoms, depth=3):
+    if depth == 0 or not symptoms:
+        return "Likely diagnosis"
+    # Recursively apply diagnostic rules based on symptoms
+    print(f"Checking deeper level symptoms for: {symptoms[0]}")
+    return recursive_diagnosis(symptoms[1:], depth-1)
+
+symptoms = ["fever", "cough", "shortness of breath"]
+diagnosis = recursive_diagnosis(symptoms)
+
+
+def recursive_price_growth(initial_price, growth_rate, depth):
+    if depth == 0:
+        return initial_price
+    new_price = initial_price * growth_rate
+    return recursive_price_growth(new_price, growth_rate, depth-1)
+
+initial_price = 100  # Starting price
+growth_rate = 1.05   # 5% growth per step
+print(recursive_price_growth(initial_price, growth_rate, 10))
