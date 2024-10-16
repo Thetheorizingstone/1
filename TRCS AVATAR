@@ -1,3 +1,9 @@
+pip install qiskit flask
+
+python travis_simulator.py
+
+
+
 # Import necessary libraries
 import qiskit
 from qiskit import QuantumCircuit, Aer, execute
