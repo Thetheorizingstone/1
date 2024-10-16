@@ -1,0 +1,91 @@
+docker build -t national_debt_api .
+docker run -p 5000:500
+docker run -p 5000:5000 national_debt_api{
+  "initial_debt": 32000000000000,
+  "interest_rate": 0.03,
+  "inflation_rate": 0.02,
+  "gdp_growth": 0.02,
+  "scenario": "recession"
+}
+
+curl https://cli-assets.heroku.com/install.sh | sh
+
+heroku login
+
+heroku create national-debt-api
+
+git push heroku main
+
+heroku open
+
+sudo apt-get update
+sudo apt-get install docker.io
+
+docker build -t national_debt_api .
+docker run -p 5000:5000 national_debt_api
+def stress_test_scenarios():
+    scenarios = [
+        {
+            "name": "High Interest Rates",
+            "initial_debt": 32000000000000,
+            "interest_rate": 0.08,
+            "inflation_rate": 0.02,
+            "gdp_growth": 0.02,
+            "years": 10
+        },
+        {
+            "name": "Hyperinflation",
+            "initial_debt": 32000000000000,
+            "interest_rate": 0.05,
+            "inflation_rate": 0.10,
+            "gdp_growth": 0.01,
+            "years": 10
+        },
+        {
+            "name": "Recession (Negative Growth)",
+            "initial_debt": 32000000000000,
+            "interest_rate": 0.03,
+            "inflation_rate": 0.01,
+            "gdp_growth": -0.02,
+            "years": 10
+        },
+        {
+            "name": "Stagflation",
+            "initial_debt": 32000000000000,
+            "interest_rate": 0.06,
+            "inflation_rate": 0.07,
+            "gdp_growth": 0.01,
+            "years": 10
+        }
+    ]
+
+    results = []
+    for scenario in scenarios:
+        result = calculate_national_debt(**scenario)
+        results.append({
+            "scenario": scenario["name"],
+            "final_debt": result["final_debt"],
+            "debt_history": result["debt_history"]
+        })
+    
+    return results
+
+# Run the stress tests and display results
+stress_test_results = stress_test_scenarios()
+for res in stress_test_results:
+    print(f"Scenario: {res['scenario']}")
+    print(f"Final Debt: {res['final_debt']}")
+    print(f"Debt History: {res['debt_history']}\n")
+
+def calculate_exponential_debt(initial_debt, interest_rate, inflation_rate, years):
+    return initial_debt * ((1 + interest_rate - inflation_rate) ** years)
+
+# Example usage
+exp_debt = calculate_exponential_debt(32000000000000, 0.03, 0.02, 10)
+print(f"Exponential Debt After 10 Years: {exp_debt}")
+
+
+
+
+
+
