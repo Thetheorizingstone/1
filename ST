@@ -1,0 +1,132 @@
+from qiskit import QuantumCircuit, Aer, execute
+from random import randint
+
+class QuantumTrolley:
+    def __init__(self, trolley_id):
+        self.trolley_id = trolley_id
+        self.position = 0  # Start at position 0
+        self.sensor_data = {}
+        self.task_manager = QuantumTaskManager()
+
+    def update_sensor_data(self, sensor_type, value):
+        self.sensor_data[sensor_type] = value
+        return f"Sensor data updated: {sensor_type} = {value}"
+
+    def move(self):
+        # Use a quantum circuit to decide on movement
+        quantum_result = self.perform_quantum_movement()
+        if quantum_result == '0':
+            self.position += 1  # Move forward
+        else:
+            self.position -= 1  # Move backward
+        return f"Trolley {self.trolley_id} moved to position {self.position}"
+
+    def perform_quantum_movement(self):
+        # Create a simple quantum circuit to decide movement
+        circuit = QuantumCircuit(1)
+        circuit.h(0)  # Apply a Hadamard gate to create superposition
+        circuit.measure_all()
+
+        simulator = Aer.get_backend('qasm_simulator')
+        job = execute(circuit, simulator, shots=1)
+        result = job.result()
+        counts = result.get_counts(circuit)
+        
+        return max(counts, key=counts.get)  # '0' for forward, '1' for backward
+
+    def assign_task(self, task):
+        result = self.task_manager.process_task(task)
+        return result
+
+# Example: Create a Quantum Trolley
+trolley = QuantumTrolley(trolley_id="Trolley1")
+print(trolley.move())
+
+
+
+class QuantumTaskManager:
+    def __init__(self):
+        self.tasks = []
+
+    def process_task(self, task):
+        if task in self.tasks:
+            return f"Task {task} already in queue."
+        self.tasks.append(task)
+        return self.execute_task(task)
+
+    def execute_task(self, task):
+        # Simulate a quantum task execution (could be extended to quantum decision-making)
+        return f"Executing task: {task}"
+
+# Example: Assigning a task to the trolley
+trolley_task = "Transport goods to station B"
+trolley.assign_task(trolley_task)
+
+
+
+from qiskit import QuantumCircuit, Aer, execute
+
+def create_quantum_decision_circuit():
+    # Create a basic quantum circuit for decision making
+    circuit = QuantumCircuit(1, 1)
+    circuit.h(0)  # Apply Hadamard gate to create superposition
+    circuit.measure(0, 0)  # Measure the qubit
+
+    # Simulate the circuit
+    simulator = Aer.get_backend('qasm_simulator')
+    job = execute(circuit, simulator, shots=1)
+    result = job.result()
+    counts = result.get_counts(circuit)
+    
+    decision = max(counts, key=counts.get)  # Choose the decision with the highest count
+    return decision
+
+# Example: Making a quantum-based decision for movement
+decision = create_quantum_decision_circuit()
+print(f"Quantum decision: {decision}")  # Output will be '0' or '1'
+
+
+
+from flask import Flask, request, jsonify
+from quantum_trolley import QuantumTrolley
+
+app = Flask(__name__)
+
+trolley = QuantumTrolley(trolley_id="Trolley1")
+
+@app.route('/move_trolley', methods=['POST'])
+def move_trolley():
+    move_result = trolley.move()
+    return jsonify({"status": "success", "message": move_result})
+
+@app.route('/assign_task', methods=['POST'])
+def assign_task():
+    data = request.json
+    task = data.get('task')
+    result = trolley.assign_task(task)
+    return jsonify({"status": "success", "message": result})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+from flask_socketio import SocketIO
+
+socketio = SocketIO(app)
+
+@socketio.on('trolley_move')
+def handle_trolley_move(data):
+    result = trolley.move()
+    socketio.emit('trolley_status', {'message': result})
+
+@socketio.on('trolley_task')
+def handle_trolley_task(data):
+    task = data.get('task')
+    result = trolley.assign_task(task)
+    socketio.emit('trolley_task_status', {'message': result})
+
+if __name__ == '__main__':
+    socketio.run(app, host='0.0.0.0', port=5000)
+
+# Example: Updating sensor data (for obstacle detection)
+trolley.update_sensor_data("obstacle_distance", 5)  # 5 meters to obstacle
+trolley.update_sensor_data("battery_level", 80)  # 80% battery remaining
