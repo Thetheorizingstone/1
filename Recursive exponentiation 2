@@ -1,0 +1,49 @@
+MAX_RECURSION_DEPTH = 1000  # Set maximum recursion depth to avoid infinite loops
+DELTA = 1e-9               # Threshold for convergence (small difference)
+EPSILON = 1e-6             # Threshold for rounding nominal variance
+
+def recursive_to_infinity(x, depth=1):
+    """
+    Perform recursive exponentiation until the value converges or hits maximum recursion depth.
+
+    Parameters:
+    x (float): The initial value for recursion.
+    depth (int): The current recursion depth.
+
+    Returns:
+    float: The converged value or None if max recursion depth is reached.
+    """
+    if depth > MAX_RECURSION_DEPTH:
+        return None  # Prevent infinite recursion
+
+    prev = x
+    next_val = x ** prev
+
+    # If the difference between iterations is smaller than DELTA, assume convergence
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    else:
+        return recursive_to_infinity(next_val, depth + 1)
+
+def adjust_for_nominal_variance(x):
+    """
+    Adjusts values close to whole numbers for nominal variance.
+
+    Parameters:
+    x (float): The value to adjust.
+
+    Returns:
+    float: The adjusted value (rounded if close to a whole number).
+    """
+    if abs(x - round(x)) < EPSILON:
+        return round(x)
+    return x
+
+
+x = 1.5
+result = recursive_to_infinity(x)
+if result is not None:
+    adjusted_result = adjust_for_nominal_variance(result)
+    print(f"Final Result: {adjusted_result}")
+else:
+    print("Exceeded maximum recursion depth.")
