@@ -1,0 +1,67 @@
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Universe Class
+class Universe:
+    def __init__(self):
+        self.avatars = []
+        self.locations = []
+    
+    def add_avatar(self, avatar, location):
+        """Add an avatar to the universe with its location (x, y, z)."""
+        self.avatars.append(avatar)
+        self.locations.append(location)
+
+    def plot_avatars(self):
+        """Plot avatars' locations in 3D space on Earth."""
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        
+        xs = [loc[0] for loc in self.locations]  # Latitude
+        ys = [loc[1] for loc in self.locations]  # Longitude
+        zs = [loc[2] for loc in self.locations]  # Elevation
+        
+        # Plot each avatar with labels
+        for i, avatar in enumerate(self.avatars):
+            ax.scatter(xs[i], ys[i], zs[i], label=avatar.name)
+            ax.text(xs[i], ys[i], zs[i], avatar.name)
+
+        ax.set_xlabel('Latitude (X)')
+        ax.set_ylabel('Longitude (Y)')
+        ax.set_zlabel('Elevation (Z)')
+        ax.set_title('Avatar Locations on Earth')
+        
+        plt.legend()
+        plt.show()
+
+# Avatar Class
+class Avatar:
+    def __init__(self, name, role, attributes=None):
+        self.name = name
+        self.role = role
+        self.attributes = attributes or {}
+
+    def __repr__(self):
+        return f"Avatar(Name: {self.name}, Role: {self.role}, Attributes: {self.attributes})"
+
+# Locations
+travis_location = (34.2415, -117.2898, 1400)  # Crestline, CA
+doctor_location = (40.7128, -74.0060, 10)     # New York, NY
+lawyer_location = (34.0522, -118.2437, 71)    # Los Angeles, CA
+ic_location = (37.7749, -122.4194, 16)        # San Francisco, CA
+
+# Avatar Creation
+travis = Avatar("Travis Raymond-Charlie Stone", "Athlete", {"Height": "6ft", "Weight": "200 lbs", "BodyFat": "12-15%"})
+doctor = Avatar("Doctor", "Healthcare Professional", {"Specialization": "Medical Diagnostics"})
+lawyer = Avatar("Lawyer", "Legal Professional", {"Specialization": "Corporate Law"})
+ic = Avatar("Incident Commander", "Emergency Management", {"Experience": "FEMA Operations"})
+
+# Create Universe and add avatars
+earth = Universe()
+earth.add_avatar(travis, travis_location)
+earth.add_avatar(doctor, doctor_location)
+earth.add_avatar(lawyer, lawyer_location)
+earth.add_avatar(ic, ic_location)
+
+# Plot avatars on the 3D scatterplot
+earth.plot_avatars()
