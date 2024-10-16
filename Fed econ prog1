@@ -1,0 +1,65 @@
+import numpy as np
+
+class FedEconomicProgram:
+    def __init__(self):
+        self.debt = 0  # National debt
+        self.gdp = 0  # GDP
+        self.inflation_target = 2.0  # Target inflation rate in percent
+        self.interest_rate = 0.05  # Initial nominal interest rate
+        self.current_inflation = 0.0  # Current inflation rate
+        self.potential_output_growth_rate = 0.03  # 3% potential output growth rate
+
+    def update_economy(self, government_spending, tax_revenue):
+        deficit = self.calculate_deficit(government_spending, tax_revenue)
+        self.debt += deficit  # Update national debt
+        print(f"Updated Debt: {self.debt}")
+
+    def calculate_deficit(self, spending, revenue):
+        return spending - revenue
+
+    def calculate_inflation(self, cpi_current, cpi_previous):
+        self.current_inflation = (cpi_current - cpi_previous) / cpi_previous * 100
+        return self.current_inflation
+
+    def debt_to_gdp_ratio(self):
+        return (self.debt / self.gdp) * 100 if self.gdp > 0 else float('inf')
+
+    def apply_taylor_rule(self, actual_output):
+        output_gap = (actual_output - self.potential_output()) / self.potential_output()
+        self.interest_rate = 0.02 + self.current_inflation + output_gap  # Base rate + inflation + output gap
+        print(f"Updated Interest Rate: {self.interest_rate:.2%}")
+
+    def potential_output(self):
+        # Using exponential growth to calculate potential output
+        return self.gdp * np.exp(self.potential_output_growth_rate)
+
+    def run_predictive_analysis(self, gdp, interest_rate, inflation):
+        # Placeholder for predictive regression model
+        # Here you might include a regression analysis or exponential smoothing
+        predicted_deficit = 0.01 * gdp + 0.1 * interest_rate - 0.5 * inflation
+        return predicted_deficit
+
+# Instantiate the program
+fed_program = FedEconomicProgram()
+
+# Example economic inputs
+fed_program.gdp = 20000  # Set initial GDP
+fed_program.update_economy(government_spending=5000, tax_revenue=4500)
+
+# Example inflation calculation
+current_cpi = 110
+previous_cpi = 108
+inflation_rate = fed_program.calculate_inflation(current_cpi, previous_cpi)
+print(f"Current Inflation Rate: {inflation_rate:.2f}%")
+
+# Calculate Debt-to-GDP Ratio
+debt_gdp_ratio = fed_program.debt_to_gdp_ratio()
+print(f"Current Debt to GDP Ratio: {debt_gdp_ratio:.2f}%")
+
+# Apply the Taylor Rule based on an example actual output
+actual_output = 19000  # Example actual output
+fed_program.apply_taylor_rule(actual_output)
+
+# Run predictive analysis
+predicted_deficit = fed_program.run_predictive_analysis(fed_program.gdp, fed_program.interest_rate, fed_program.current_inflation)
+print(f"Predicted Deficit: {predicted_deficit:.2f}")
