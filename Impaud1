@@ -1,0 +1,174 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from marshmallow import Schema, fields, validate, ValidationError
+from celery import Celery
+from datetime import datetime, timedelta
+import math
+import os
+import logging
+from flask_bcrypt import Bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Initialize the Flask application
+app = Flask(__name__)
+
+# Configuration settings
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///landowners.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_jwt_secret_key')
+app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+
+# Initialize database, JWT manager, bcrypt, and Celery
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+limiter = Limiter(get_remote_address, app=app)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+# Database model for Landowner
+class LandownerModel(db.Model):
+    """Model for Landowner."""
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    units_owned = db.Column(db.Integer, nullable=False)
+    fully_occupied_units = db.Column(db.Integer, nullable=False)
+    empty_units = db.Column(db.Integer, nullable=False)
+    dependents = db.Column(db.Integer, nullable=False)
+    months_vacant = db.Column(db.Integer, nullable=False)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Create the database tables
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+# Marshmallow schema for input validation
+class LandownerSchema(Schema):
+    units_owned = fields.Int(required=True, validate=validate.Range(min=0))
+    fully_occupied_units = fields.Int(required=True, validate=validate.Range(min=0))
+    empty_units = fields.Int(required=True, validate=validate.Range(min=0))
+    dependents = fields.Int(required=True, validate=validate.Range(min=0))
+    months_vacant = fields.Int(required=True, validate=validate.Range(min=0))
+
+# Celery task for tax calculation
+@celery.task
+def calculate_tax_async(units_owned, fully_occupied_units, empty_units, months_vacant):
+    tax = calculate_tax(units_owned, fully_occupied_units)
+    penalty = calculate_empty_unit_penalty(empty_units, months_vacant)
+    return tax + penalty
+
+# Function to calculate taxes and penalties
+def calculate_tax(units_owned, fully_occupied_units):
+    k = 0.1  # Example constant for exponential growth
+    tax = 100 * math.exp(k * (units_owned ** 2))
+    tax_break = 0.1 * fully_occupied_units * 100
+    return tax - tax_break
+
+def calculate_empty_unit_penalty(empty_units, months_vacant):
+    penalty = 0
+    for unit in range(empty_units):
+        if months_vacant > 1:
+            penalty += 50 * (2 ** (months_vacant - 1))
+    return penalty
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    owner_id = data.get('owner_id')
+    password = data.get('password')
+
+    if LandownerModel.query.filter_by(owner_id=owner_id).first():
+        return jsonify(message="Owner ID already exists."), 400
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_landowner = LandownerModel(owner_id=owner_id, password_hash=hashed_password,
+                                   units_owned=0, fully_occupied_units=0,
+                                   empty_units=0, dependents=0, months_vacant=0)
+    db.session.add(new_landowner)
+    db.session.commit()
+    return jsonify(message="Registration successful."), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    owner_id = data.get('owner_id')
+    password = data.get('password')
+
+    landowner = LandownerModel.query.filter_by(owner_id=owner_id).first()
+    if landowner and bcrypt.check_password_hash(landowner.password_hash, password):
+        access_token = create_access_token(identity=owner_id)
+        return jsonify(access_token=access_token), 200
+    return jsonify(message="Invalid credentials."), 401
+
+@app.route('/audit', methods=['POST'])
+@jwt_required()
+@limiter.limit("5 per minute")  # Rate limiting
+def submit_audit():
+    data = request.json
+    owner_id = get_jwt_identity()
+
+    # Validate input data
+    try:
+        landowner_schema = LandownerSchema()
+        validated_data = landowner_schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
+    # Update or add landowner data
+    landowner = LandownerModel.query.filter_by(owner_id=owner_id).first()
+    if landowner:
+        landowner.units_owned = validated_data['units_owned']
+        landowner.fully_occupied_units = validated_data['fully_occupied_units']
+        landowner.empty_units = validated_data['empty_units']
+        landowner.dependents = validated_data['dependents']
+        landowner.months_vacant = validated_data['months_vacant']
+        landowner.last_updated = datetime.utcnow()
+    else:
+        new_landowner = LandownerModel(owner_id=owner_id, **validated_data)
+        db.session.add(new_landowner)
+
+    db.session.commit()
+    
+    # Start asynchronous tax calculation
+    total_due = calculate_tax_async.delay(validated_data['units_owned'],
+                                           validated_data['fully_occupied_units'],
+                                           validated_data['empty_units'],
+                                           validated_data['months_vacant'])
+
+    return jsonify({
+        'message': 'Audit submitted successfully.',
+        'total_due': total_due.id,
+        'next_due_date': (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d')
+    })
+
+@app.route('/tax_calculation/<task_id>', methods=['GET'])
+@jwt_required()
+def get_tax_calculation(task_id):
+    result = calculate_tax_async.AsyncResult(task_id)
+    
+    if result.state == 'PENDING':
+        return jsonify({'status': 'Pending...'}), 202
+    elif result.state == 'FAILURE':
+        return jsonify({'status': 'Failed', 'error': str(result.info)}), 500
+    else:
+        return jsonify({'status': 'Completed', 'total_due': result.result})
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint."""
+    return jsonify({'status': 'Healthy'}), 200
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    """Global error handler."""
+    app.logger.error(f'Error: {str(e)}')
+    return jsonify({'message': 'An internal error occurred.'}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
