@@ -1,0 +1,136 @@
+pip install Flask SQLAlchemy Celery Redis
+
+
+
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from celery import Celery
+import math
+import redis
+
+# Flask app and database configuration
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///landowners.db'
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+db = SQLAlchemy(app)
+
+# Initialize Celery
+def make_celery(app):
+    celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    return celery
+
+celery = make_celery(app)
+
+# Models
+class Owner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    num_units = db.Column(db.Integer, default=0)
+    vacant_units = db.Column(db.Integer, default=0)
+
+class Property(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    status = db.Column(db.String(20), default='occupied')  # Can be 'occupied' or 'vacant'
+    rent = db.Column(db.Float, default=1000.00)  # Rent price for the property
+
+# Helper function to calculate progressive tax using exponentially exponential exponent calculation
+def progressive_exponential_tax(units, vacant_units, base_rate=0.01):
+    occupied_units = units - vacant_units
+    vacant_exponent = math.exp(vacant_units ** 2)
+    occupied_exponent = math.exp(occupied_units ** 0.5)
+    total_tax = base_rate * (occupied_exponent + vacant_exponent)
+    return total_tax
+
+# Quantum reasoning placeholder (mock for complex calculations)
+def quantum_reasoning_calculation(owner_id):
+    # Placeholder for quantum reasoning logic - here it just returns a mock result
+    return f"QuantumReasoning result for owner {owner_id}"
+
+# API route to calculate tax
+@app.route('/calculate_tax', methods=['POST'])
+def calculate_tax():
+    data = request.json
+    owner_id = data.get('owner_id')
+
+    owner = Owner.query.get(owner_id)
+    if not owner:
+        return jsonify({'error': 'Owner not found'}), 404
+
+    # Asynchronous task to calculate tax
+    task = calculate_tax_async.apply_async(args=[owner_id])
+    return jsonify({'task_id': task.id, 'message': 'Tax calculation started'}), 202
+
+# Celery task for asynchronous tax calculation
+@celery.task
+def calculate_tax_async(owner_id):
+    owner = Owner.query.get(owner_id)
+    if not owner:
+        return {'error': 'Owner not found'}
+
+    total_tax = progressive_exponential_tax(owner.num_units, owner.vacant_units)
+    quantum_result = quantum_reasoning_calculation(owner_id)
+    
+    # Mock result of tax calculation
+    result = {
+        'owner_id': owner_id,
+        'num_units': owner.num_units,
+        'vacant_units': owner.vacant_units,
+        'total_tax': total_tax,
+        'quantum_result': quantum_result
+    }
+
+    return result
+
+# API route to fetch the result of a task
+@app.route('/task_result/<task_id>', methods=['GET'])
+def get_task_result(task_id):
+    task = calculate_tax_async.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        return jsonify({'state': task.state, 'message': 'Task is still running'}), 202
+    elif task.state != 'FAILURE':
+        return jsonify({'state': task.state, 'result': task.result}), 200
+    else:
+        return jsonify({'state': task.state, 'error': task.info}), 500
+
+# Route to add an owner and properties for testing
+@app.route('/add_owner', methods=['POST'])
+def add_owner():
+    data = request.json
+    name = data.get('name')
+    num_units = data.get('num_units')
+    vacant_units = data.get('vacant_units')
+    
+    new_owner = Owner(name=name, num_units=num_units, vacant_units=vacant_units)
+    db.session.add(new_owner)
+    db.session.commit()
+
+    return jsonify({'message': 'Owner added', 'owner_id': new_owner.id}), 201
+
+# Route to add a property for an owner
+@app.route('/add_property', methods=['POST'])
+def add_property():
+    data = request.json
+    owner_id = data.get('owner_id')
+    rent = data.get('rent', 1000.00)
+    
+    new_property = Property(owner_id=owner_id, rent=rent)
+    db.session.add(new_property)
+    db.session.commit()
+
+    return jsonify({'message': 'Property added', 'property_id': new_property.id}), 201
+
+if __name__ == '__main__':
+    db.create_all()  # Creates the database tables
+    app.run(debug=True)
+
+
+
+
+redis-server
+
+python run.py
+
+celery -A run.celery worker --loglevel=info
