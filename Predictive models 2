@@ -1,0 +1,43 @@
+# Example of visualizing impact with reform (simplified)
+from matplotlib import pyplot as plt
+
+def visualize_projection(debt, years, label):
+    plt.plot(range(1, years + 1), debt, label=label)
+    plt.title("Debt Projection Over Time")
+    plt.xlabel("Years")
+    plt.ylabel("National Debt (in trillions)")
+    plt.legend()
+    plt.grid(True)
+
+# Simulate reform scenario: increase revenue, decrease spending
+def simulate_reform(government_spending, tax_revenue, initial_debt, inflation_rate, years):
+    debt = [initial_debt]
+    for year in range(1, years + 1):
+        deficit = government_spending - tax_revenue
+        new_debt = debt[-1] + deficit
+        new_debt *= (1 + inflation_rate)
+        debt.append(new_debt)
+    return debt
+
+def main_with_reform():
+    initial_debt = 30000  # starting debt in billions
+    spending = 500  # billions per year
+    revenue = 450  # billions per year
+    inflation_rate = 0.02  # 2%
+    years = 20
+    
+    # Without reform
+    debt_no_reform = simulate_reform(spending, revenue, initial_debt, inflation_rate, years)
+    
+    # With reform (tax increase + spending cut)
+    spending_reform = spending - 50  # cut spending by 50 billion
+    revenue_reform = revenue + 100  # increase revenue by 100 billion
+    debt_reform = simulate_reform(spending_reform, revenue_reform, initial_debt, inflation_rate, years)
+    
+    # Visualize results
+    visualize_projection(debt_no_reform, years, "Without Reform")
+    visualize_projection(debt_reform, years, "With Reform")
+    plt.show()
+
+if __name__ == "__main__":
+    main_with_reform()
