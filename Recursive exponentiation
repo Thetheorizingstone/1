@@ -1,0 +1,11 @@
+def recursive_exponentiation(x, n):
+    if n == 0:
+        return x
+    else:
+        return x ** recursive_exponentiation(x, n - 1)
+
+# Example usage
+x = 1.5
+layers = 3
+result = recursive_exponentiation(x, layers)
+print(f"Result of {layers}-layer recursive exponentiation for x = {x}: {result}")
