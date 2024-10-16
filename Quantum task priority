@@ -1,0 +1,18 @@
+def quantum_task_priority(base_priority, max_layers=100, precision_threshold=1e-8):
+    current_priority = base_priority
+    previous_priority = 0
+    layer = 0
+    
+    while layer < max_layers and abs(current_priority - previous_priority) > precision_threshold:
+        previous_priority = current_priority
+        current_priority = np.exp(current_priority)
+        layer += 1
+        print(f"TaskManager Layer {layer}: {current_priority}")
+    
+    return current_priority, layer
+
+# Example usage for task priority, starting at 0.2 (low priority)
+base_priority = 0.2
+final_priority, task_layers = quantum_task_priority(base_priority)
+
+print(f"Final Task Priority after {task_layers} layers: {final_priority}")
