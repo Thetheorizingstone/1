@@ -1,0 +1,19 @@
+def stone_loop_exponential_growth(base_value, max_iterations=100, growth_factor=1.05, precision_threshold=1e-6):
+    current_value = base_value
+    previous_value = 0
+    iteration = 0
+    
+    while iteration < max_iterations and abs(current_value - previous_value) > precision_threshold:
+        previous_value = current_value
+        current_value *= growth_factor
+        current_value = np.exp(current_value)
+        iteration += 1
+        print(f"Stone Loop Iteration {iteration}: {current_value}")
+    
+    return current_value, iteration
+
+# Example starting value for Stone Loop metrics (e.g., energy, cost)
+initial_value = 50.0
+final_value, total_iterations = stone_loop_exponential_growth(initial_value)
+
+print(f"Final Stone Loop result after {total_iterations} iterations: {final_value}")
