@@ -1,0 +1,113 @@
+import sqlite3
+import json
+
+# Connect to SQLite
+conn = sqlite3.connect('resume_comparison.db')
+cursor = conn.cursor()
+
+# Create Resumes table with JSON field for storing resumes
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS Resumes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        resume_json TEXT  -- Store resume as JSON to simulate NoSQL
+    )
+''')
+
+# Create Scenarios table to hold criteria (SQL structured)
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS Scenarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        scenario_name TEXT,
+        criteria_json TEXT  -- Store evaluation criteria as JSON
+    )
+''')
+
+conn.commit()def insert_resume(name, resume_data):
+    # Convert resume_data to JSON string
+    resume_json = json.dumps(resume_data)
+    
+    # Insert into Resumes table
+    cursor.execute('''
+        INSERT INTO Resumes (name, resume_json)
+        VALUES (?, ?)
+    ''', (name, resume_json))
+    
+    conn.commit()
+    print(f'Resume for {name} inserted successfully!')
+
+# Example resume data as a dictionary (simulates NoSQL document)
+resume_example = {
+    "name": "Travis Raymond-Charlie Stone",
+    "skills": ["AI", "Machine Learning", "Python", "SQL", "Survival"],
+    "roles": ["Data Scientist", "Combat Medic", "Athletic Trainer"],
+    "experience": [
+        {"role": "Data Scientist", "years": 5},
+        {"role": "Combat Medic", "years": 3}
+    ]
+}
+
+insert_resume("Travis Raymond-Charlie Stone", resume_example)# Function to fetch and compare resumes (either SQL structured or JSON unstructured)
+def fetch_resume(name, mode="nosql"):
+    if mode == "nosql":
+        # Fetch resume stored as JSON (NoSQL-like)
+        cursor.execute('SELECT resume_json FROM Resumes WHERE name = ?', (name,))
+        result = cursor.fetchone()
+        if result:
+            resume_data = json.loads(result[0])  # Convert JSON back to Python dict
+            print(f"Fetched Resume (NoSQL mode): {resume_data}")
+            return resume_data
+        else:
+            print(f"No resume found for {name}")
+    
+    elif mode == "sql":
+        # Fetch resume using SQL structured queries (if skills, roles are in SQL fields)
+        # This would require altering the table schema to have structured fields.
+        # Simulating a simpler fetch for now.
+        print(f"Fetching resume in SQL mode (not fully implemented).")
+
+# Example fetch (NoSQL mode)
+fetched_resume = fetch_resume("Travis Raymond-Charlie Stone", mode="nosql")def insert_scenario(scenario_name, criteria_data):
+    # Convert criteria_data to JSON string
+    criteria_json = json.dumps(criteria_data)
+    
+    # Insert into Scenarios table
+    cursor.execute('''
+        INSERT INTO Scenarios (scenario_name, criteria_json)
+        VALUES (?, ?)
+    ''', (scenario_name, criteria_json))
+    
+    conn.commit()
+    print(f'Scenario {scenario_name} inserted successfully!')
+
+# Example criteria for Zombie Apocalypse scenario
+zombie_criteria = {
+    "survival": 5,
+    "combat": 4,
+    "leadership": 3,
+    "paramedic": 4,
+    "decision_making": 5
+}
+
+insert_scenario("Zombie Apocalypse", zombie_criteria)def compare_resume_to_scenario(resume_data, scenario_name):
+    # Fetch the scenario criteria
+    cursor.execute('SELECT criteria_json FROM Scenarios WHERE scenario_name = ?', (scenario_name,))
+    result = cursor.fetchone()
+    
+    if result:
+        criteria = json.loads(result[0])
+        score = 0
+        
+        # Compare resume skills/roles to scenario criteria
+        for skill, weight in criteria.items():
+            if skill in resume_data.get("skills", []):
+                score += weight
+        
+        print(f"Score for {resume_data['name']} in {scenario_name}: {score}")
+        return score
+    else:
+        print(f"No scenario found for {scenario_name}")
+        return 0
+
+# Example comparison
+compare_resume_to_scenario(fetched_resume, "Zombie Apocalypse")
