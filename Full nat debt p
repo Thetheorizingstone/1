@@ -1,0 +1,91 @@
+import numpy as np
+import pandas as pd
+from flask import Flask, request, jsonify
+from scipy.optimize import minimize
+
+app = Flask(__name__)
+
+# ---- Exponential Debt Projection Model ---- #
+
+def debt_projection(initial_debt, deficit_rate, interest_rate, years):
+    """
+    Projects national debt based on deficit rate and interest rate over a given number of years.
+    
+    :param initial_debt: Current national debt
+    :param deficit_rate: Annual deficit as a percentage of GDP
+    :param interest_rate: Interest rate on debt
+    :param years: Number of years for projection
+    :return: Projected national debt after the given number of years
+    """
+    debt = initial_debt
+    debt_history = [initial_debt]
+    
+    for year in range(1, years+1):
+        annual_deficit = deficit_rate * debt
+        debt = debt + annual_deficit + interest_rate * debt
+        debt_history.append(debt)
+    
+    return debt, debt_history
+
+# ---- Optimization of Fiscal Policy ---- #
+
+def objective_function(params, initial_debt, interest_rate, years):
+    """
+    Objective function to minimize debt using policy changes (tax rate and spending cuts).
+    
+    :param params: [tax_rate, spending_cut] - the parameters we optimize
+    :param initial_debt: Current national debt
+    :param interest_rate: Interest rate on debt
+    :param years: Number of years for projection
+    :return: Projected national debt
+    """
+    tax_rate, spending_cut = params
+    deficit_rate = 0.05 - tax_rate + spending_cut  # Base deficit is 5%, subtract tax increase and spending cuts
+    final_debt, _ = debt_projection(initial_debt, deficit_rate, interest_rate, years)
+    return final_debt
+
+def optimize_fiscal_policy(initial_debt, interest_rate, years):
+    """
+    Optimizes fiscal policy to minimize debt using taxes and spending cuts.
+    
+    :param initial_debt: Current national debt
+    :param interest_rate: Interest rate on debt
+    :param years: Number of years for projection
+    :return: Optimal tax rate and spending cuts
+    """
+    initial_guess = [0.02, 0.01]  # Starting guess: 2% tax increase, 1% spending cut
+    bounds = [(0, 0.1), (0, 0.1)]  # Limits for tax rate and spending cuts (0-10%)
+    result = minimize(objective_function, initial_guess, args=(initial_debt, interest_rate, years), bounds=bounds)
+    return result.x  # Return optimized [tax_rate, spending_cut]
+
+# ---- API Endpoints ---- #
+
+@app.route('/project_debt', methods=['POST'])
+def project_debt():
+    data = request.json
+    initial_debt = data['initial_debt']
+    deficit_rate = data['deficit_rate']
+    interest_rate = data['interest_rate']
+    years = data['years']
+    
+    final_debt, debt_history = debt_projection(initial_debt, deficit_rate, interest_rate, years)
+    return jsonify({
+        "final_debt": final_debt,
+        "debt_history": debt_history
+    })
+
+@app.route('/optimize_policy', methods=['POST'])
+def optimize_policy():
+    data = request.json
+    initial_debt = data['initial_debt']
+    interest_rate = data['interest_rate']
+    years = data['years']
+    
+    optimized_policy = optimize_fiscal_policy(initial_debt, interest_rate, years)
+    return jsonify({
+        "optimal_tax_rate": optimized_policy[0],
+        "optimal_spending_cut": optimized_policy[1]
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)
