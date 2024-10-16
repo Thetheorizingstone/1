@@ -1,0 +1,43 @@
+import math
+
+# Recursive function to calculate f_n(x) = x^(x^(x^...)) with nominal variance handling
+def recursive_exponentiation_with_variance(x, n_layers, tolerance=1e-6):
+    if n_layers == 1:
+        return x
+    
+    # Calculate the next layer recursively
+    next_layer_value = recursive_exponentiation_with_variance(x, n_layers - 1, tolerance)
+    
+    # Handle nominal variance close to whole numbers
+    nominal_value = x ** next_layer_value
+    
+    # If nominal value is close to a whole number, adjust for variance
+    if abs(nominal_value - round(nominal_value)) < tolerance:
+        nominal_value = round(nominal_value)
+    
+    return nominal_value
+
+# Function to approximate f_infinity(x) with convergence
+def recursive_exponentiation_convergence(x, max_layers=1000, tolerance=1e-6):
+    prev_value = x
+    for i in range(1, max_layers + 1):
+        new_value = x ** prev_value
+        
+        # Check for convergence based on tolerance
+        if abs(new_value - prev_value) < tolerance:
+            print(f"Converged at layer {i} with value: {new_value}")
+            return new_value
+        
+        prev_value = new_value
+    
+    print(f"Did not converge within {max_layers} layers, returning final value: {prev_value}")
+    return prev_value
+
+# Example usage
+x_value = 1.5  # Value close to whole number to test variance handling
+n_layers = 10  # Recursive depth for finite recursion
+convergence_value = recursive_exponentiation_convergence(x_value)
+finite_value = recursive_exponentiation_with_variance(x_value, n_layers)
+
+print(f"Recursive exponentiation for {x_value} after {n_layers} layers: {finite_value}")
+print(f"Recursive exponentiation convergence result for {x_value}: {convergence_value}")
