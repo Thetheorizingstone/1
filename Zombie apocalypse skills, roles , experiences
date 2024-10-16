@@ -1,0 +1,48 @@
+pip install qiskitfrom qiskit import IBMQ
+
+# Save and load your IBM Quantum token
+IBMQ.save_account('YOUR_IBM_QUANTUM_TOKEN')
+IBMQ.load_account()provider = IBMQ.get_provider(hub='ibm-q')
+backend = provider.get_backend('ibmq_qasm_simulator')from qiskit import QuantumCircuit, execute
+from qiskit.tools.monitor import job_monitor
+
+class QuantumTaskManager:
+    def __init__(self, backend):
+        self.backend = backend
+
+    def run_task(self, circuit):
+        # Run the quantum circuit on IBM's quantum backend
+        job = execute(circuit, self.backend, shots=1024)
+        job_monitor(job)  # Monitor the job status
+        result = job.result()
+        counts = result.get_counts()
+        return countsdef run_resume_comparison_ibm(resume_data, scenario_criteria, backend):
+    # Create the quantum circuit for resume comparison
+    qc = resume_comparison_circuit(resume_data, scenario_criteria)
+
+    # Run the circuit on IBM's quantum backend
+    qtm = QuantumTaskManager(backend)
+    result = qtm.run_task(qc)
+
+    # Display results from IBM's quantum system
+    print(f"Quantum Comparison Results (IBM): {result}")
+    return result# Define a resume and scenario criteria
+resume_example = {
+    "skills": 5,
+    "roles": 3,
+    "experience": 6
+}
+
+zombie_apocalypse_criteria = {
+    "skills": 4,
+    "roles": 3,
+    "experience": 5
+}
+
+# Connect to IBM backend
+provider = IBMQ.get_provider(hub='ibm-q')
+backend = provider.get_backend('ibmq_qasm_simulator')
+
+# Run the resume comparison on IBM’s quantum system
+counts = run_resume_comparison_ibm(resume_example, zombie_apocalypse_criteria, backend)reasoning = quantum_reasoning_algorithm(counts)
+print(f"Quantum Reasoning (IBM): {reasoning}")
