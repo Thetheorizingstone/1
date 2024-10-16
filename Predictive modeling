@@ -1,0 +1,63 @@
+import numpy as np
+import pandas as pd
+
+class EconomicModel:
+    def __init__(self, government_spending, tax_revenue, initial_debt, gdp_growth_rate, inflation_rate):
+        self.government_spending = government_spending
+        self.tax_revenue = tax_revenue
+        self.initial_debt = initial_debt
+        self.gdp_growth_rate = gdp_growth_rate
+        self.inflation_rate = inflation_rate
+
+    def calculate_deficit(self):
+        return self.government_spending - self.tax_revenue
+
+    def project_debt(self, years):
+        debt = self.initial_debt
+        for year in range(years):
+            deficit = self.calculate_deficit()
+            debt += deficit
+            debt *= (1 + self.inflation_rate)
+            print(f"Projected Debt at Year {year + 1}: {debt}")
+        return debt
+
+class Scenario:
+    def __init__(self, spending, revenue, debt, gdp_growth, inflation):
+        self.spending = spending
+        self.revenue = revenue
+        self.debt = debt
+        self.gdp_growth = gdp_growth
+        self.inflation = inflation
+
+    def display_scenario(self):
+        print("Current Economic Scenario:")
+        print(f"Government Spending: {self.spending}")
+        print(f"Tax Revenue: {self.revenue}")
+        print(f"Initial Debt: {self.debt}")
+        print(f"GDP Growth Rate: {self.gdp_growth}")
+        print(f"Inflation Rate: {self.inflation}")
+
+def main():
+    print("Economic Model Simulation")
+    
+    # User inputs for scenario
+    try:
+        spending = float(input("Enter government spending (in billions): "))
+        revenue = float(input("Enter tax revenue (in billions): "))
+        initial_debt = float(input("Enter initial debt (in billions): "))
+        gdp_growth = float(input("Enter GDP growth rate (as a decimal): "))
+        inflation = float(input("Enter inflation rate (as a decimal): "))
+        
+        # Create Scenario
+        scenario = Scenario(spending, revenue, initial_debt, gdp_growth, inflation)
+        scenario.display_scenario()
+
+        # Calculate and project debt over the next 10 years
+        model = EconomicModel(spending, revenue, initial_debt, gdp_growth, inflation)
+        model.project_debt(10)
+
+    except ValueError:
+        print("Invalid input. Please enter numeric values.")
+
+if __name__ == "__main__":
+    main()
