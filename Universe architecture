@@ -1,0 +1,140 @@
+# Import necessary libraries
+import json
+import random
+from flask import Flask, jsonify, request
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Mock Database
+database = {
+    "avatars": [],
+    "patients": [],
+    "cases": [],
+    "incidents": []
+}
+
+# 1. Travis Raymond-Charlie Stone Avatar Service
+
+class Avatar:
+    def __init__(self, name, height, weight, body_fat):
+        self.name = name
+        self.height = height
+        self.weight = weight
+        self.body_fat = body_fat
+        self.attributes = {}
+    
+    def update_attributes(self, new_attributes):
+        self.attributes.update(new_attributes)
+
+    def display(self):
+        return {
+            "name": self.name,
+            "height": self.height,
+            "weight": self.weight,
+            "body_fat": self.body_fat,
+            "attributes": self.attributes
+        }
+
+# 2. Healthcare Service
+
+class Patient:
+    def __init__(self, name, health_record):
+        self.name = name
+        self.health_record = health_record
+
+class HealthcareService:
+    @staticmethod
+    def add_patient(patient):
+        database["patients"].append(patient)
+
+    @staticmethod
+    def get_patients():
+        return database["patients"]
+
+# 3. Legal Service
+
+class LegalCase:
+    def __init__(self, case_id, client_name):
+        self.case_id = case_id
+        self.client_name = client_name
+        self.status = "Open"
+
+class LegalService:
+    @staticmethod
+    def add_case(legal_case):
+        database["cases"].append(legal_case)
+
+    @staticmethod
+    def get_cases():
+        return database["cases"]
+
+# 4. Incident Command Service
+
+class Incident:
+    def __init__(self, incident_id, description):
+        self.incident_id = incident_id
+        self.description = description
+        self.timestamp = datetime.now()
+
+class IncidentCommandService:
+    @staticmethod
+    def report_incident(incident):
+        database["incidents"].append(incident)
+
+    @staticmethod
+    def get_incidents():
+        return database["incidents"]
+
+# Initialize Avatar
+travis_avatar = Avatar(name="Travis Raymond-Charlie Stone", height=6, weight=200, body_fat=12)
+database["avatars"].append(travis_avatar.display())
+
+@app.route('/api/avatar', methods=['GET'])
+def get_avatar():
+    return jsonify(travis_avatar.display()), 200
+
+@app.route('/api/avatar/update', methods=['POST'])
+def update_avatar_attributes():
+    new_attributes = request.json
+    travis_avatar.update_attributes(new_attributes)
+    return jsonify(travis_avatar.display()), 200
+
+@app.route('/api/patients', methods=['POST'])
+def add_patient():
+    data = request.json
+    new_patient = Patient(name=data["name"], health_record=data["health_record"])
+    HealthcareService.add_patient(new_patient)
+    return jsonify({"message": "Patient added successfully."}), 201
+
+@app.route('/api/patients', methods=['GET'])
+def list_patients():
+    patients = HealthcareService.get_patients()
+    return jsonify([{"name": patient.name, "health_record": patient.health_record} for patient in patients]), 200
+
+@app.route('/api/cases', methods=['POST'])
+def add_case():
+    data = request.json
+    new_case = LegalCase(case_id=data["case_id"], client_name=data["client_name"])
+    LegalService.add_case(new_case)
+    return jsonify({"message": "Legal case added successfully."}), 201
+
+@app.route('/api/cases', methods=['GET'])
+def list_cases():
+    cases = LegalService.get_cases()
+    return jsonify([{"case_id": case.case_id, "client_name": case.client_name, "status": case.status} for case in cases]), 200
+
+@app.route('/api/incidents', methods=['POST'])
+def report_incident():
+    data = request.json
+    new_incident = Incident(incident_id=data["incident_id"], description=data["description"])
+    IncidentCommandService.report_incident(new_incident)
+    return jsonify({"message": "Incident reported successfully."}), 201
+
+@app.route('/api/incidents', methods=['GET'])
+def list_incidents():
+    incidents = IncidentCommandService.get_incidents()
+    return jsonify([{"incident_id": incident.incident_id, "description": incident.description, "timestamp": incident.timestamp} for incident in incidents]), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
