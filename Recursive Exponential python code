@@ -1,0 +1,56 @@
+#Here are the key equations from the recursive exponential model, formatted so they can be easily copied and pasted into your work or software:
+
+#1. Recursive Exponential Growth Formula:
+#Python code equivalent:
+
+def recursive_exp(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    else:
+        return recursive_exp(next_val, depth + 1)
+
+
+#2. Recursive Function Representation:
+
+
+
+#Python code equivalent:
+
+def f_n_plus_1(x, f_n):
+    return x ** f_n
+
+
+#3. Infinite Layer Recursive Growth:
+
+
+
+#Python code equivalent:
+
+def recursive_to_infinity(x, depth=1):
+    if depth > MAX_RECURSION_DEPTH:
+        return None
+    prev = x
+    next_val = x ** prev
+    if abs(next_val - prev) < DELTA:
+        return next_val
+    else:
+        return recursive_to_infinity(next_val, depth + 1)
+
+
+#4. Nominal Variance Adjustment (for close-to-integer values):
+
+#Python code equivalent:
+
+def adjust_for_nominal_variance(x):
+    if abs(x - round(x)) < EPSILON:
+        return round(x)
+    return x
+
+
+
+#Feel free to use these equations and corresponding Python functions directly in your own code or documentation.
+
