@@ -1,0 +1,128 @@
+
+
+
+
+python app.py
+pip install Flask
+
+
+
+
+{
+    "owner_id": "owner123",
+    "units_owned": 5,
+    "fully_occupied_units": 3,
+    "empty_units": 2,
+    "dependents": 2,
+    "months_vacant": 4
+}
+
+
+
+
+{
+    "message": "Audit submitted successfully.",
+    "total_tax": <calculated_tax>,
+    "empty_unit_penalty": <calculated_penalty>,
+    "total_due": <total_amount_due>,
+    "next_due_date": "YYYY-MM-DD"
+}
+
+
+
+
+{
+    "owner_id": "owner123",
+    "total_tax": <calculated_tax>,
+    "empty_unit_penalty": <calculated_penalty>,
+    "total_due": <total_amount_due>,
+    "dependents": 2,
+    "last_updated": "YYYY-MM-DD HH:MM:SS"
+}
+
+
+
+
+
+from flask import Flask, request, jsonify
+from datetime import datetime
+import math
+
+app = Flask(__name__)
+
+# In-memory storage for demonstration purposes
+landowners_data = {}
+tax_rate_base = 100  # Example base tax rate per unit
+penalty_base = 50    # Example base penalty per empty unit
+cost_of_living_index = 1.03  # Example adjustment factor (3% increase)
+
+# Function to calculate total tax owed
+def calculate_tax(units_owned, fully_occupied_units):
+    k = 0.1  # Example constant for exponential growth
+    tax = tax_rate_base * math.exp(k * (units_owned ** 2))
+    tax_break = 0.1 * fully_occupied_units * tax_rate_base
+    total_tax = tax - tax_break
+    return total_tax
+
+# Function to calculate penalties for empty units
+def calculate_empty_unit_penalty(empty_units, months_vacant):
+    penalty = 0
+    for unit in range(empty_units):
+        if months_vacant > 1:
+            penalty += penalty_base * (2 ** (months_vacant - 1))
+    return penalty
+
+@app.route('/audit', methods=['POST'])
+def submit_audit():
+    data = request.json
+    owner_id = data['owner_id']
+    units_owned = data['units_owned']
+    fully_occupied_units = data['fully_occupied_units']
+    empty_units = data['empty_units']
+    dependents = data['dependents']
+    months_vacant = data['months_vacant']
+
+    # Store or update landowner data
+    landowners_data[owner_id] = {
+        'units_owned': units_owned,
+        'fully_occupied_units': fully_occupied_units,
+        'empty_units': empty_units,
+        'dependents': dependents,
+        'months_vacant': months_vacant,
+        'last_updated': datetime.now()
+    }
+
+    # Calculate tax and penalties
+    total_tax = calculate_tax(units_owned, fully_occupied_units)
+    empty_unit_penalty = calculate_empty_unit_penalty(empty_units, months_vacant)
+    total_due = total_tax + empty_unit_penalty
+
+    return jsonify({
+        'message': 'Audit submitted successfully.',
+        'total_tax': total_tax,
+        'empty_unit_penalty': empty_unit_penalty,
+        'total_due': total_due,
+        'next_due_date': (datetime.now().replace(day=1) + timedelta(days=30)).strftime('%Y-%m-%d')
+    })
+
+@app.route('/tax_calculation/<owner_id>', methods=['GET'])
+def get_tax_calculation(owner_id):
+    if owner_id not in landowners_data:
+        return jsonify({'message': 'Landowner not found.'}), 404
+
+    landowner_info = landowners_data[owner_id]
+    total_tax = calculate_tax(landowner_info['units_owned'], landowner_info['fully_occupied_units'])
+    empty_unit_penalty = calculate_empty_unit_penalty(landowner_info['empty_units'], landowner_info['months_vacant'])
+    total_due = total_tax + empty_unit_penalty
+
+    return jsonify({
+        'owner_id': owner_id,
+        'total_tax': total_tax,
+        'empty_unit_penalty': empty_unit_penalty,
+        'total_due': total_due,
+        'dependents': landowner_info['dependents'],
+        'last_updated': landowner_info['last_updated'].strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)
