@@ -1,0 +1,116 @@
+import sqlite3
+import json
+from flask import Flask, jsonify, request
+from threading import Lock
+
+app = Flask(__name__)
+
+# Database setup
+class Database:
+    def __init__(self, db_name='universe_city.db'):
+        self.connection = sqlite3.connect(db_name, check_same_thread=False)
+        self.cursor = self.connection.cursor()
+        self.lock = Lock()
+        self.create_tables()
+
+    def create_tables(self):
+        with self.lock:
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS car_sensors (
+                    id INTEGER PRIMARY KEY,
+                    data TEXT NOT NULL
+                )
+            ''')
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS agriculture_sensors (
+                    id INTEGER PRIMARY KEY,
+                    data TEXT NOT NULL
+                )
+            ''')
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS law_enforcement_sensors (
+                    id INTEGER PRIMARY KEY,
+                    data TEXT NOT NULL
+                )
+            ''')
+            self.connection.commit()
+
+    def insert_data(self, table, data):
+        with self.lock:
+            self.cursor.execute(f'INSERT INTO {table} (data) VALUES (?)', (json.dumps(data),))
+            self.connection.commit()
+
+    def fetch_data(self, table):
+        with self.lock:
+            self.cursor.execute(f'SELECT * FROM {table}')
+            return self.cursor.fetchall()
+
+# Sensor Management
+class Sensor:
+    def __init__(self, db):
+        self.db = db
+
+    def collect_data(self, sensor_type, data):
+        self.db.insert_data(sensor_type, data)
+
+class CarSensor(Sensor):
+    def __init__(self, db):
+        super().__init__(db)
+
+class AgricultureSensor(Sensor):
+    def __init__(self, db):
+        super().__init__(db)
+
+class LawEnforcementSensor(Sensor):
+    def __init__(self, db):
+        super().__init__(db)
+
+# Ultron Dashboard
+class Ultron:
+    def __init__(self, db):
+        self.db = db
+
+    def get_statistics(self):
+        car_data = self.db.fetch_data('car_sensors')
+        agriculture_data = self.db.fetch_data('agriculture_sensors')
+        law_data = self.db.fetch_data('law_enforcement_sensors')
+        return {
+            'car_sensors': car_data,
+            'agriculture_sensors': agriculture_data,
+            'law_enforcement_sensors': law_data,
+        }
+
+# Flask Routes
+@app.route('/collect_car_data', methods=['POST'])
+def collect_car_data():
+    data = request.json
+    car_sensor.collect_data('car_sensors', data)
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/collect_agriculture_data', methods=['POST'])
+def collect_agriculture_data():
+    data = request.json
+    agriculture_sensor.collect_data('agriculture_sensors', data)
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/collect_law_data', methods=['POST'])
+def collect_law_data():
+    data = request.json
+    law_enforcement_sensor.collect_data('law_enforcement_sensors', data)
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/ultron_dashboard', methods=['GET'])
+def ultron_dashboard():
+    stats = ultron.get_statistics()
+    return jsonify(stats), 200
+
+# Initialization
+db = Database()
+car_sensor = CarSensor(db)
+agriculture_sensor = AgricultureSensor(db)
+law_enforcement_sensor = LawEnforcementSensor(db)
+ultron = Ultron(db)
+
+# Run the app
+if __name__ == '__main__':
+    app.run(debug=True)
