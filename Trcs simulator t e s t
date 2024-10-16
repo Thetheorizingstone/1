@@ -1,0 +1,60 @@
+import unittest
+import numpy as np
+
+class TestRecursiveExponentialGrowth(unittest.TestCase):
+
+    def setUp(self):
+        # Initial parameters for testing
+        self.initial_value = 100  # Initial value (e.g., population, investment)
+        self.growth_rate = 0.05  # Growth rate (5%)
+        self.time_periods = 10    # Number of time periods to evaluate
+
+    def test_recursive_growth_equation(self):
+        # Test the recursive growth equation: A_n = A_0 * (1 + r)^n
+        A_0 = self.initial_value
+        r = self.growth_rate
+        n = self.time_periods
+        expected_value = A_0 * (1 + r) ** n
+        
+        # Calculate the value using the recursive formula
+        A_n = self.recursive_growth(A_0, r, n)
+        
+        self.assertAlmostEqual(A_n, expected_value, places=5)
+
+    def test_growth_with_zero_growth_rate(self):
+        # When the growth rate is zero, the value should remain constant
+        r = 0
+        expected_value = self.initial_value
+        
+        # Calculate the value
+        A_n = self.recursive_growth(self.initial_value, r, self.time_periods)
+        
+        self.assertEqual(A_n, expected_value)
+
+    def test_growth_with_negative_growth_rate(self):
+        # Test for a negative growth rate, which should decrease the value
+        r = -0.05  # -5% growth
+        A_0 = self.initial_value
+        expected_value = A_0 * (1 + r) ** self.time_periods
+        
+        # Calculate the value
+        A_n = self.recursive_growth(A_0, r, self.time_periods)
+        
+        self.assertAlmostEqual(A_n, expected_value, places=5)
+
+    def test_initial_conditions(self):
+        # Ensure that at time n=0, the value is equal to the initial value
+        A_0 = self.initial_value
+        A_n = self.recursive_growth(A_0, self.growth_rate, 0)
+        
+        self.assertEqual(A_n, A_0)
+
+    def recursive_growth(self, A_0, r, n):
+        """Simple recursive growth function."""
+        if n == 0:
+            return A_0
+        else:
+            return self.recursive_growth(A_0 * (1 + r), r, n - 1)
+
+if __name__ == '__main__':
+    unittest.main()
