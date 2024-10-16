@@ -1,0 +1,29 @@
+import requests
+
+# Sample function to check for any matches of your intellectual property
+def check_ip_infringement(query):
+    url = f'https://www.googleapis.com/customsearch/v1?q={query}&key=YOUR_API_KEY'
+    response = requests.get(url)
+    return response.json()
+
+# Example usage
+ip_term = "Your Project Name or Key Phrase"
+infringement_results = check_ip_infringement(ip_term)
+print(infringement_results)
+
+
+
+import requests
+
+# GitHub API to check forks and dependencies for proper attribution
+def check_forks(repo):
+    url = f'https://api.github.com/repos/{repo}/forks'
+    response = requests.get(url)
+    forks = response.json()
+    for fork in forks:
+        if "attribution" not in fork.get("description", "").lower():
+            print(f"Attribution missing in fork: {fork['full_name']}")
+
+# Example usage
+repo_name = "your_project/repository_name"
+check_forks(repo_name)
