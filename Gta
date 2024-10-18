@@ -1,0 +1,90 @@
+
+import numpy as np
+from qiskit import QuantumCircuit, Aer, execute
+
+class QuantumOracle:
+    def __init__(self, n, marked_element):
+        self.n = n
+        self.marked_element = marked_element
+        self.oracle_circuit = self.create_oracle()
+
+    def create_oracle(self):
+        """Create the oracle circuit."""
+        oracle = QuantumCircuit(self.n)
+        oracle.z(self.marked_element)  # Flip phase of the marked element
+        return oracle
+
+    def get_oracle(self):
+        """Return the oracle circuit."""
+        return self.oracle_circuit
+
+class GroversAlgorithm:
+    def __init__(self, n, marked_element):
+        self.n = n
+        self.marked_element = marked_element
+        self.iterations = int(np.pi / 4 * np.sqrt(2**n))
+        self.results = None
+
+    def run(self):
+        """Execute Grover's algorithm and return the results."""
+        qc = QuantumCircuit(self.n)
+        # Initialize qubits in state |s> = (|0> + |1>) / sqrt(2)
+        qc.h(range(self.n))
+
+        oracle = QuantumOracle(self.n, self.marked_element).get_oracle()
+
+        # Apply the oracle for the number of iterations
+        for _ in range(self.iterations):
+            qc += oracle
+            qc.h(range(self.n))
+            qc.x(range(self.n))
+            qc.h(self.n - 1)
+            qc.mct(list(range(self.n - 1)), self.n - 1)  # Multi-controlled Toffoli
+            qc.h(self.n - 1)
+            qc.x(range(self.n))
+            qc.h(range(self.n))
+
+        # Measure the qubits
+        qc.measure_all()
+        
+        # Execute the circuit
+        self.results = self.execute_circuit(qc)
+        return self.results
+
+    @staticmethod
+    def execute_circuit(circuit):
+        """Run the quantum circuit on a simulator."""
+        backend = Aer.get_backend('qasm_simulator')
+        shots = 1024
+        result = execute(circuit, backend, shots=shots).result()
+        return result.get_counts(circuit)
+
+class ErrorHandling:
+    @staticmethod
+    def handle_results(counts, marked_element):
+        """Check results for errors and provide feedback."""
+        if len(counts) == 0:
+            raise ValueError("No results returned from Grover's algorithm.")
+        if str(marked_element) not in counts:
+            print("Warning: Marked element not found in results.")
+        else:
+            print(f"Marked element {marked_element} found with count: {counts[str(marked_element)]}")
+
+def main():
+    # Parameters
+    n = 3  # Number of qubits
+    marked_element = 5  # The index of the marked element (binary: 101)
+
+    # Execute Grover's algorithm
+    grover = GroversAlgorithm(n, marked_element)
+    results = grover.run()
+
+    # Output results
+    print("Results of Grover's Algorithm:")
+    print(results)
+
+    # Call error handling on results
+    ErrorHandling.handle_results(results, marked_element)
+
+if __name__ == "__main__":
+    main()
