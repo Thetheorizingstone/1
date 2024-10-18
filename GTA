@@ -1,0 +1,75 @@
+import numpy as np
+from qiskit import QuantumCircuit, Aer, execute
+
+class LoanOracle:
+    def __init__(self, n, optimal_rates):
+        self.n = n
+        self.optimal_rates = optimal_rates
+        self.oracle_circuit = self.create_oracle()
+
+    def create_oracle(self):
+        """Create the oracle circuit for optimal loan rates."""
+        oracle = QuantumCircuit(self.n)
+        for rate in self.optimal_rates:
+            # Mark the optimal rates by flipping their phase
+            oracle.z(rate)  # Assume rates are encoded as binary indices
+        return oracle
+
+    def get_oracle(self):
+        """Return the oracle circuit."""
+        return self.oracle_circuit
+
+class GroversLoanAlgorithm:
+    def __init__(self, n, optimal_rates):
+        self.n = n
+        self.optimal_rates = optimal_rates
+        self.iterations = int(np.pi / 4 * np.sqrt(2**n))  # O(√N)
+        self.results = None
+
+    def run(self):
+        """Execute Grover's algorithm for optimal loan rates."""
+        qc = QuantumCircuit(self.n)
+        qc.h(range(self.n))  # Initialize qubits to |s>
+
+        oracle = LoanOracle(self.n, self.optimal_rates).get_oracle()
+
+        # Apply the oracle for the number of iterations
+        for _ in range(self.iterations):
+            qc += oracle
+            qc.h(range(self.n))
+            qc.x(range(self.n))
+            qc.h(self.n - 1)
+            qc.mct(list(range(self.n - 1)), self.n - 1)  # Multi-controlled Toffoli
+            qc.h(self.n - 1)
+            qc.x(range(self.n))
+            qc.h(range(self.n))
+
+        qc.measure_all()  # Measure the qubits
+        self.results = self.execute_circuit(qc)
+        return self.results
+
+    @staticmethod
+    def execute_circuit(circuit):
+        """Run the quantum circuit on a simulator."""
+        backend = Aer.get_backend('qasm_simulator')
+        shots = 1024
+        result = execute(circuit, backend, shots=shots).result()
+        return result.get_counts(circuit)
+
+class LoanOptimizer:
+    @staticmethod
+    def optimize_loan_rates():
+        """Run the Grover's algorithm and optimize loan rates."""
+        n = 3  # Number of qubits
+        optimal_rates = [0, 3, 5]  # Example indices for optimal rates (binary: 000, 011, 101)
+
+        grover = GroversLoanAlgorithm(n, optimal_rates)
+        results = grover.run()
+        
+        # Assume O(1) output selection
+        optimal_rate = max(results, key=results.get)  # Select the optimal rate directly
+        print("Optimal loan interest rate (binary index):", optimal_rate)
+        print("Optimal loan interest rate selected:", optimal_rates[int(optimal_rate, 2)])
+
+if __name__ == "__main__":
+    LoanOptimizer.optimize_loan_rates()
