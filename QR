@@ -1,0 +1,44 @@
+ 
+
+#1. Original Quantum Reasoning Algorithm
+
+#This code represents a basic exponential growth model and a linear prediction model.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters for the Original Algorithm
+k = 0.1  # Growth constant
+m = 2    # Slope for linear model
+b = 1    # Y-intercept for linear model
+x = np.linspace(0, 10, 100)  # Input range
+
+# Exponential Growth Model
+def exponential_growth(x, k):
+    return np.exp(k * x)
+
+# Linear Prediction Model
+def linear_model(x, m, b):
+    return m * x + b
+
+# Calculate outputs
+y_growth = exponential_growth(x, k)
+y_linear = linear_model(x, m, b)
+
+# Plotting the results
+plt.figure(figsize=(12, 6))
+plt.plot(x, y_growth, label='Exponential Growth (f(x) = e^(kx))', color='blue')
+plt.plot(x, y_linear, label='Linear Model (y = mx + b)', color='orange')
+plt.title('Original Quantum Reasoning Algorithm')
+plt.xlabel('x')
+plt.ylabel('Function Value')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+	•	The First Code implements the Original Quantum Reasoning Algorithm using basic exponential and linear models to demonstrate growth patterns.
+	•	The Second Code reflects the Revised Quantum Reasoning Algorithm, showcasing recursive convergence and divergence functions and a forecasting model that incorporates multiple variables.
+
+These examples can serve as a foundation for further development and integration into a more comprehensive platform framework. If you need additional features or modifications, please let me know!
