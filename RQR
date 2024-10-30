@@ -1,0 +1,58 @@
+#Revised Quantum Reasoning Algorithm
+
+#This code illustrates a more complex recursive model for convergence and divergence, incorporating multiple variables.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters for the Revised Algorithm
+L_sub_max = 10  # Maximum recursion depth
+P_x = 0.2  # A function parameter for convergence/divergence
+alpha = 1.0  # Constant for forecast equation
+beta = 0.5   # Growth factor for forecasting
+
+# Recursive Convergence Function
+def recursive_convergence(k, P_x):
+    return sum(np.exp(-k * P_x) for k in range(1, L_sub_max + 1))
+
+# Recursive Divergence Function
+def recursive_divergence(k, P_x):
+    return sum(np.exp(k * P_x) for k in range(1, L_sub_max + 1))
+
+# Multi-variable Interaction Model
+def forecast(x, t):
+    return alpha + beta * x + np.exp(0.1 * t)  # Incorporates time dependency
+
+# Prepare input data
+x_values = np.linspace(0, 10, 100)
+t_values = np.linspace(0, 10, 100)
+
+# Calculate outputs for convergence and divergence
+y_convergence = [recursive_convergence(k, P_x) for k in x_values]
+y_divergence = [recursive_divergence(k, P_x) for k in x_values]
+y_forecast = [forecast(x, t) for x, t in zip(x_values, t_values)]
+
+# Plotting the results
+plt.figure(figsize=(12, 8))
+
+# Subplot for convergence and divergence
+plt.subplot(2, 1, 1)
+plt.plot(x_values, y_convergence, label='Recursive Convergence', color='green')
+plt.plot(x_values, y_divergence, label='Recursive Divergence', color='red')
+plt.title('Revised Quantum Reasoning Algorithm')
+plt.xlabel('x')
+plt.ylabel('Function Value')
+plt.legend()
+plt.grid(True)
+
+# Subplot for forecasting
+plt.subplot(2, 1, 2)
+plt.plot(x_values, y_forecast, label='Forecast (α + βx + e^(0.1t))', color='purple')
+plt.title('Forecasting with Multi-variable Interaction')
+plt.xlabel('x')
+plt.ylabel('Forecast Value')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
