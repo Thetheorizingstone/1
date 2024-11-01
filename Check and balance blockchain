@@ -1,0 +1,212 @@
+from flask import Flask, request, jsonify
+import hashlib
+import json
+import time
+import numpy as np
+from concurrent.futures import ThreadPoolExecutor
+
+app = Flask(__name__)
+
+# === Central Data Source for Medical and Legal Records ===
+
+class CentralDataSource:
+    """Central data source serving as the core data repository in the UQU."""
+    def __init__(self):
+        self.data = {
+            "medical_records": [],
+            "legal_records": []
+        }
+
+    def add_record(self, category, data_entry):
+        """Add a record to a specific category."""
+        if category in self.data:
+            self.data[category].append(data_entry)
+
+    def get_records(self, category):
+        """Retrieve all records from a specific category."""
+        return self.data.get(category, [])
+
+# Instantiate Central Data Source
+central_data_source = CentralDataSource()
+
+# === Blockchain for Secure Record Storage with Analytics ===
+
+class Blockchain:
+    """Blockchain simulation to secure and store medical and legal records immutably, with analytics."""
+    def __init__(self):
+        self.chain = []
+        self.analytics = {
+            "transaction_history": [],
+            "verification_counts": {},
+            "certification_counts": {},
+            "record_trends": {"medical": 0, "legal": 0}
+        }
+        self.create_block(previous_hash='0', data="Genesis Block")
+
+    def create_block(self, previous_hash, data):
+        """Create a new block in the blockchain and log analytics."""
+        block = {
+            'index': len(self.chain) + 1,
+            'timestamp': time.time(),
+            'data': data,
+            'previous_hash': previous_hash,
+            'hash': self.hash_block(data, previous_hash)
+        }
+        self.chain.append(block)
+
+        # Update analytics
+        self.log_transaction(block)
+        self.update_trends(data)
+        return block
+
+    def hash_block(self, data, previous_hash):
+        """Hash a block's data and previous hash."""
+        block_string = json.dumps(data, sort_keys=True) + previous_hash
+        return hashlib.sha256(block_string.encode()).hexdigest()
+
+    def get_last_block(self):
+        """Return the last block in the blockchain."""
+        return self.chain[-1]
+
+    def log_transaction(self, block):
+        """Log transaction details in analytics."""
+        self.analytics["transaction_history"].append({
+            "index": block["index"],
+            "timestamp": block["timestamp"],
+            "data": block["data"]
+        })
+
+    def update_trends(self, data):
+        """Update trends based on record type (medical or legal)."""
+        record_type = data.get("type")
+        if record_type in self.analytics["record_trends"]:
+            self.analytics["record_trends"][record_type] += 1
+
+    def increment_verification_count(self, block_index):
+        """Increment the verification count for a specific block."""
+        self.analytics["verification_counts"][block_index] = self.analytics["verification_counts"].get(block_index, 0) + 1
+
+    def increment_certification_count(self, block_index):
+        """Increment the certification count for a specific legal block."""
+        self.analytics["certification_counts"][block_index] = self.analytics["certification_counts"].get(block_index, 0) + 1
+
+# Instantiate Blockchain
+record_blockchain = Blockchain()
+
+# === Parallel Computing for Secondary Logging ===
+
+def log_to_secondary_storage(data):
+    """Simulate secondary logging of blockchain data (e.g., to a separate database or file)."""
+    time.sleep(0.5)  # Simulate I/O delay for parallel processing
+    print(f"Secondary log: {data}")
+
+# Thread pool for parallel execution
+executor = ThreadPoolExecutor(max_workers=4)
+
+# === Avatar Classes with Enhanced Roles ===
+
+class Avatar:
+    """Base class for avatars in UQU."""
+    def __init__(self, name, position, data_source):
+        self.name = name
+        self.position = np.array(position, dtype=float)
+        self.data_source = data_source
+
+class DoctorAvatar(Avatar):
+    """Doctor avatar responsible for creating and verifying medical and legal case records."""
+    
+    def add_medical_record(self, avatar_name, medical_data):
+        """Add a medical record to the blockchain for a specific avatar."""
+        last_block = record_blockchain.get_last_block()
+        new_block = record_blockchain.create_block(
+            previous_hash=last_block['hash'],
+            data={'type': 'medical', 'avatar': avatar_name, 'medical_data': medical_data}
+        )
+        self.data_source.add_record("medical_records", new_block)
+
+        # Parallel logging to secondary storage
+        executor.submit(log_to_secondary_storage, new_block)
+        return new_block
+
+    def transcribe_legal_case(self, case_id, case_data):
+        """Transcribe a legal case and add it to the blockchain."""
+        last_block = record_blockchain.get_last_block()
+        new_block = record_blockchain.create_block(
+            previous_hash=last_block['hash'],
+            data={'type': 'legal', 'case_id': case_id, 'case_data': case_data}
+        )
+        self.data_source.add_record("legal_records", new_block)
+
+        # Parallel logging to secondary storage
+        executor.submit(log_to_secondary_storage, new_block)
+        return new_block
+
+class LawyerAvatar(Avatar):
+    """Lawyer avatar responsible for authorizing and certifying records as a notary."""
+    
+    def authorize_medical_record(self, block_index):
+        """Authorize a medical record by verifying its integrity."""
+        block = record_blockchain.chain[block_index]
+        calculated_hash = record_blockchain.hash_block(block['data'], block['previous_hash'])
+        if block['hash'] == calculated_hash:
+            record_blockchain.increment_verification_count(block_index)
+            return {"status": "Authorized", "block": block}
+        else:
+            return {"status": "Unauthorized - Hash mismatch", "block": block}
+
+    def certify_legal_case(self, block_index):
+        """Certify a legal case record as a notary."""
+        block = record_blockchain.chain[block_index]
+        calculated_hash = record_blockchain.hash_block(block['data'], block['previous_hash'])
+        if block['hash'] == calculated_hash and block['data']['type'] == 'legal':
+            record_blockchain.increment_certification_count(block_index)
+            return {"status": "Certified", "block": block}
+        else:
+            return {"status": "Certification failed - Invalid record type or hash mismatch", "block": block}
+
+# Instantiate Doctor and Lawyer Avatars
+doctor_avatar = DoctorAvatar("Dr. Smith", [2, 0, -5], central_data_source)
+lawyer_avatar = LawyerAvatar("Lawyer Johnson", [-3, 1, -6], central_data_source)
+
+# === Flask API: Dashboards, Analytics, and Interaction Endpoints ===
+
+@app.route('/analytics', methods=['GET'])
+def get_analytics():
+    """Retrieve blockchain analytics, including trends, verification counts, and transaction history."""
+    return jsonify(record_blockchain.analytics)
+
+@app.route('/avatar_dashboard/<name>', methods=['GET'])
+def avatar_dashboard(name):
+    """Dashboard endpoint for avatars to view personal data and status."""
+    avatar_summary = {
+        "name": name,
+        "position": list(doctor_avatar.position),
+        "medical_records_count": len(central_data_source.get_records("medical_records")),
+        "legal_records_count": len(central_data_source.get_records("legal_records"))
+    }
+    return jsonify(avatar_summary)
+
+@app.route('/doctor_dashboard/add_medical_record', methods=['POST'])
+def add_medical_record():
+    """Doctor dashboard endpoint to add a medical record to the blockchain."""
+    data = request.json
+    avatar_name = data['avatar_name']
+    medical_data = data['medical_data']
+    new_block = doctor_avatar.add_medical_record(avatar_name, medical_data)
+    return jsonify({"message": "Medical record added to blockchain", "block": new_block})
+
+@app.route('/lawyer_dashboard/authorize_medical_record', methods=['POST'])
+def authorize_medical_record():
+    """Lawyer dashboard endpoint to authorize a medical record."""
+    data = request.json
+    block_index = data['block_index']
+    
+    # Authorize the medical record
+    if 0 <= block_index < len(record_blockchain.chain):
+        authorization_result = lawyer_avatar.authorize_medical_record(block_index)
+        return jsonify(authorization_result)
+    else:
+        return jsonify({"message": "Invalid block index"}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
