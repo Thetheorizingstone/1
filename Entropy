@@ -1,0 +1,92 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+class ComplexSystemModel:
+    def __init__(self, positive_pressure, negative_pressure, amplitude, frequency, phase):
+        """
+        Initialize the complex system model with pressures, oscillation parameters, and efficiency coefficient.
+        
+        Parameters:
+            positive_pressure (float): Dispersive forces driving the system towards disorder.
+            negative_pressure (float): Organizational forces promoting stability and cohesion.
+            amplitude (float): Amplitude of the oscillatory function representing potential for disorder.
+            frequency (float): Frequency of oscillation, indicating rate of shift between order and chaos.
+            phase (float): Phase shift for initial conditions in the oscillatory function.
+        """
+        self.positive_pressure = positive_pressure
+        self.negative_pressure = negative_pressure
+        self.amplitude = amplitude
+        self.frequency = frequency
+        self.phase = phase
+
+    def calculate_net_pressure(self):
+        """Calculate the net pressure as the difference between positive and negative pressures."""
+        return self.positive_pressure - self.negative_pressure
+
+    def calculate_efficiency_coefficient(self):
+        """
+        Calculate the efficiency coefficient to measure system's resilience to chaos.
+        This is defined as the ratio of organizational force to the sum of both forces.
+        """
+        total_pressure = abs(self.positive_pressure) + abs(self.negative_pressure)
+        return abs(self.negative_pressure) / total_pressure if total_pressure != 0 else 0
+
+    def oscillatory_function(self, time):
+        """
+        Calculate the oscillatory function for given time steps.
+        
+        Parameters:
+            time (array-like): Time steps at which to evaluate the oscillatory function.
+            
+        Returns:
+            array-like: Oscillatory function values representing stability and instability cycles.
+        """
+        return self.amplitude * np.cos(2 * np.pi * self.frequency * time + self.phase)
+
+    def plot_system_dynamics(self, time_range):
+        """
+        Plot system dynamics, including net pressure, efficiency coefficient, and oscillatory behavior.
+        
+        Parameters:
+            time_range (tuple): Start and end times for plotting.
+        """
+        # Generate time values
+        time_values = np.linspace(time_range[0], time_range[1], 500)
+        # Calculate oscillatory behavior
+        oscillatory_values = self.oscillatory_function(time_values)
+        
+        # Plot oscillatory function
+        plt.figure(figsize=(10, 6))
+        plt.plot(time_values, oscillatory_values, label='Oscillatory Behavior')
+        plt.axhline(0, color='gray', linestyle='--')
+        
+        # Display net pressure and efficiency coefficient as text
+        net_pressure = self.calculate_net_pressure()
+        efficiency = self.calculate_efficiency_coefficient()
+        plt.text(time_range[0], self.amplitude * 1.1, f'Net Pressure: {net_pressure:.2f}', fontsize=12)
+        plt.text(time_range[0], self.amplitude * 1.05, f'Efficiency Coefficient: {efficiency:.2f}', fontsize=12)
+        
+        # Plot settings
+        plt.title('Complex System Dynamics')
+        plt.xlabel('Time')
+        plt.ylabel('Oscillatory Value')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+# Example usage
+# Initialize with arbitrary values for positive and negative pressures, amplitude, frequency, and phase
+positive_pressure = 5.0  # Dispersive force
+negative_pressure = 3.0  # Organizational force
+amplitude = 2.0          # Amplitude of oscillation
+frequency = 0.1          # Frequency of oscillation
+phase = 0.0              # Phase shift
+
+# Create instance of ComplexSystemModel
+model = ComplexSystemModel(positive_pressure, negative_pressure, amplitude, frequency, phase)
+
+# Define time range for the plot
+time_range = (0, 50)
+
+# Plot system dynamics
+model.plot_system_dynamics(time_range)
