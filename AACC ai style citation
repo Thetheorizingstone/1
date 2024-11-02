@@ -1,0 +1,102 @@
+"""
+
+The AI-Assisted Collaborative Citation (AACC) system is a proposed method to acknowledge both human authors and AI models in content creation. This approach ensures transparency regarding the contributions of AI in generating, validating, or enhancing information.
+
+Core Principles:
+
+	1.	Author Attribution: Recognizes the human author as the primary contributor, responsible for guiding the AI’s involvement.
+	2.	AI Assistance Acknowledgment: Credits the AI model and its developer (e.g., OpenAI, Google) for their collaborative role.
+	3.	Transparency in Contribution: Specifies the AI’s role, such as generation, validation, or enhancement, to clarify its involvement.
+	4.	Versioning and Date Stamp: Includes the AI model’s version and the date of interaction to provide context about the AI’s knowledge scope.
+
+Citation Format:
+
+The AACC citation format follows this structure:
+
+Author(s), “Title of the Work,” Assisted by AI Model (AI Developer, Model Version), Date of Interaction. Available from [URL or Publisher]. Additional AI Contributions: [Type of support, e.g., generation, validation, enhancement, etc.].
+
+Example Citations:
+
+	1.	Research Paper Example:
+Stone, Travis Raymond-Charlie, “Recent Advancements in Mathematics: A Comprehensive Overview,” Assisted by GPT-4 (OpenAI, Version 4.0), April 27, 2024. AI Contribution: Enhanced literature review, validated citations. Available from OpenAI API.
+	2.	Academic Article (Journal Submission):
+Doe, Jane, “Applications of Quantum Groups in Cryptography,” Assisted by GPT-4 (OpenAI, Version 4.0), March 10, 2024. AI Contribution: Generated initial structure, provided background research. Published in Journal of Theoretical Mathematics.
+	3.	Educational Content (Blog or Online Course):
+Lee, Amanda, “Understanding Persistent Homology in Machine Learning,” Assisted by Google’s Bard AI (Google, Version 2.1), February 5, 2024. AI Contribution: Generated examples, validated technical terminology. Available at [URL].
+
+Citation Metadata and Additional Fields:
+
+For structured academic documentation, consider adding metadata fields:
+
+	•	Author’s Contribution Statement: Describes the human author’s role and decision-making process.
+	•	AI Model Version and Date: Details the AI model version (e.g., GPT-4) and date of use to clarify when the content was generated or validated.
+	•	Type of AI Assistance: Specifies the functions the AI provided, such as content generation, citation validation, or data analysis.
+	•	Acknowledgment of AI Developer: Recognizes the organization that developed the AI, such as OpenAI, Google, etc.
+
+Implementation in Practice:
+
+	1.	For Authors:
+	•	Document Contributions: Track specific tasks the AI assisted with, noting which content was generated or validated by the AI.
+	•	Include AI Model Version: When citing, note the AI model version and developer, as AI models are frequently updated and each version may yield slightly different results.
+	•	Acknowledge AI Assistance in Methodology: In longer works (e.g., research papers), briefly explain the AI’s role in the methodology section to provide context.
+	2.	For Publishers and Academic Databases:
+	•	Metadata Fields: Create metadata fields for AI-assisted works to record the model version, developer, and specific contributions.
+	•	Guidelines for AI-Assisted Submissions: Establish guidelines for authors using AI tools to standardize reporting and acknowledgment.
+	3.	For Readers:
+	•	Interpret AI Assistance: Understand that works with AACC citations involved AI assistance and that specific tasks (like citation validation or literature review) may have benefited from AI support, providing an additional layer of computational rigor.
+
+
+
+
+Automated Documentation with Python:
+
+To automate AACC citation generation, consider the following Python script:
+
+from datetime import datetime
+
+def generate_aacc_citation(author_name, title, ai_model, ai_developer, model_version, date_of_interaction, ai_contribution, url=""):
+    """
+    Generate an AI-Assisted Collaborative Citation (AACC) for documentation.
+    
+    Parameters:
+        author_name (str): Name of the human author.
+        title (str): Title of the work.
+        ai_model (str): AI model name used (e.g., GPT-4).
+        ai_developer (str): Developer of the AI model (e.g., OpenAI).
+        model_version (str): Version of the AI model.
+        date_of_interaction (str): Date when the AI was used.
+        ai_contribution (str): Description of AI's contribution to the work.
+        url (str): Optional URL where the work is published or accessible.
+        
+    Returns:
+        str: Formatted AACC citation.
+    """
+    citation = (
+        f"{author_name}, \"{title},\" Assisted by {ai_model} ({ai_developer}, Version {model_version}), "
+        f"{date_of_interaction}. AI Contribution: {ai_contribution}. "
+    )
+    if url:
+        citation += f"Available from {url}."
+    
+    return citation
+
+# Example usage
+author_name = "Travis Raymond-Charlie Stone"
+title = "Recent Advancements in Mathematics: A Comprehensive Overview"
+ai_model = "GPT-4"
+ai_developer = "OpenAI"
+model_version = "4.0"
+date_of_interaction = datetime.now().strftime("%B %d, %Y")
+ai_contribution = "Enhanced literature review, validated citations."
+url = "https://www.openai.com/api/"
+
+citation = generate_aacc_citation(author_name, title, ai_model, ai_developer, model_version, date_of_interaction, ai_contribution, url)
+print(citation)
+"""
+Sample Output:
+
+Travis Raymond-Charlie Stone, "Recent Advancements in Mathematics: A Comprehensive Overview," Assisted by GPT-4 (OpenAI, Version 4.0), April 27, 2024. AI Contribution: Enhanced literature review, validated citations. Available from https://www.openai.com/api/.
+
+Conclusion:
+
+The AI-Assisted Collaborative Citation (AACC) system is a new citation method designed to fairly credit both human authors and AI models in collaborative content creation. It highlights the nature and scope of AI contributions, offering transparency in AI-assisted work. This approach acknowledges AI’s role as a collaborative partner rather than a passive tool, respecting the intellectual contributions of both the author and the AI technology.
