@@ -1,0 +1,55 @@
+'''
+import numpy as np
+
+def rbf_kernel(u, v, sigma=1.0):
+    diff = u - v
+    return np.exp(-0.5 * np.dot(diff, diff) / (sigma**2))
+
+def stone_cube_step(x_k, S_k, N=50, sigma_dyn=0.1, sigma_amb=1.0, layer_index=0, eps=1e-6):
+    d = x_k.shape[0]
+
+    # 1. Ensemble generation (simple Gaussian proposals)
+    ensemble = x_k + sigma_dyn * np.random.randn(N, d)
+
+    # 2. Ambiguity / feasibility weights
+    alphas = np.array([rbf_kernel(x_k, x_i, sigma=sigma_amb) for x_i in ensemble])
+    # Softmax (numerically stable)
+    a_max = np.max(alphas)
+    weights = np.exp(alphas - a_max)
+    weights /= np.sum(weights)
+
+    # 3. Aggregation to new central state
+    x_next = np.sum(weights[:, None] * ensemble, axis=0)
+
+    # 4. Stone value update
+    S_next = (layer_index + 1) * np.log10(np.linalg.norm(x_next) + eps)
+
+    return x_next, S_next
+'''
+'''
+class Universe:
+    def __init__(self):
+        self.avatars = []
+    
+    def add_avatar(self, avatar):
+        self.avatars.append(avatar)
+
+    def plot_avatars(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        xs = [av.state.x[0] for av in self.avatars]
+        ys = [av.state.x[1] for av in self.avatars]
+        zs = [av.state.x[2] for av in self.avatars]
+
+        for av in self.avatars:
+            x, y, z = av.state.x
+            ax.scatter(x, y, z)
+            ax.text(x, y, z, av.name)
+
+        ax.set_xlabel('State dim 1')
+        ax.set_ylabel('State dim 2')
+        ax.set_zlabel('State dim 3 / Stone-related')
+        ax.set_title('Stone Cube States in 3D')
+        plt.show()
+'''
