@@ -1,0 +1,38 @@
+#Stones Law of Universiality
+
+def stones_universal_engine():
+    # 1. Inputs for all components of Stone's Law (S = F * M * T)
+    Wx = float(input("Set Field Weight (Wx): "))
+    Wy = float(input("Set Mass Weight (Wy): "))
+    Wz = float(input("Set Time Weight (Wz): "))
+
+    F_pot = float(input("Set Field Potential (F): "))
+    M_pot = float(input("Set Mass Potential (M): "))
+    T_pot = float(input("Set Time Potential (T): "))
+
+    # The quantity 'n' defines the scale of the 3D Matrix
+    n_range = int(input("Set number of Parallel Subroutines (n): "))
+
+    # 2. Recursive Flow Logic
+    for n in range(1, n_range + 1):
+        # Parallel Checksum Pulse
+        check = (1-0)**1**n 
+
+        # Universal State Calculation
+        S = (Wx * F_pot) * (Wy * M_pot) * (Wz * T_pot) * check
+
+        # Logic Gate Triple-Filter
+        gate_A = (True and False)         # Intersection
+        gate_B = not (True and False)     # Exclusion
+        gate_C = (True or False)          # Potential
+
+        # 3. Scaled Visual Output
+        # The separator now matches the 'n' scale of the subroutines
+        print(f"INDEX POSITION [N:{n}, N':{n}, N'':{n}]")
+        print(f"S-STATE OUTPUT >> {S:.4f}")
+        
+        # Scaling the frame to the subroutine quantity 'n_range'
+        print("=" * n_range) 
+
+# Execute the engine
+stones_universal_engine()
