@@ -1,0 +1,57 @@
+import math
+
+def stone_recursive_kernel(w, p, l, mode="infini"):
+    """
+    The Root Logic: Calculates a single finite path (A Perspective).
+    - w: Weight (Identity Anchor)
+    - p: Potential (Energy/Experience)
+    - l: Limit (The Finite Path/Life Span)
+    """
+    path_sum = 0.0
+    for k in range(1, l + 1):
+        # The 'Moment' (k) modulates the path recursively
+        if mode == "infini":
+            # Outward expansion: influence decays as the path lengthens
+            path_sum += math.exp(-k) * (p * w)
+        else:
+            # Inward immersion: influence intensifies as the path deepens
+            path_sum += math.exp(k) * (1 / (abs(p * w) + 1e-9))
+    return path_sum
+
+def run_root_program():
+    print("--- ROOT PROGRAM: UNIFIED RECURSIVE STATE ---")
+    
+    # 1. Finite Inputs (The 'Start' of the Path)
+    # These represent the individual's starting coordinates in reality
+    weight_x = float(input("Enter Weight (Identity): "))
+    potential_x = float(input("Enter Potential (Energy): "))
+    limit_l = int(input("Enter Limit (Path Length): "))
+    
+    # 2. Parallel Perspective Generation (n-Paths)
+    # In the root, we simulate 'n' versions of the path to find the 'Average Reality'
+    n_variants = 5
+    variants = []
+    
+    print(f"\nProcessing {n_variants} recursive variations...")
+    
+    for i in range(n_variants):
+        # Each variant 'approximates' the root but at a different proximity (i)
+        proximity_shift = i * 0.1
+        res = stone_recursive_kernel(weight_x + proximity_shift, potential_x, limit_l)
+        variants.append(res)
+        print(f" > Path Variant {i}: Value = {res:.6f}")
+
+    # 3. The Logic Gate Filter (The Triple-Filter Pulse)
+    # S = (Variant Product) / (Number of Paths) * Checksum Pulse
+    # This 'collapses' the parallel experiences into a single finite outcome
+    pulse_check = pow((1 - 0), limit_l) # The existence pulse
+    unified_s_state = (sum(variants) / n_variants) * pulse_check
+
+    # 4. Final Root Output
+    print("\n" + "="*40)
+    print(f"ROOT UNIFIED STATE (S): {unified_s_state:.10f}")
+    print("="*40)
+    print("RECURSION COMPLETE. PERSPECTIVE COLLAPSED.")
+
+if __name__ == "__main__":
+    run_root_program()
