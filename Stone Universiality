@@ -1,0 +1,62 @@
+#https://github.com/Thetheorizingstone/1.git
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+class StoneUniverse:
+    def __init__(self, Wx, Wy, Wz):
+        self.avatars = []
+        self.states = []  # Calculated S-States
+        self.weights = (Wx, Wy, Wz)
+
+    def calculate_existence(self, avatar, F, M, T, n):
+        """Processes Stone's Law (S = F*M*T) with Parallel Checksums."""
+        check = (1-0)**1**n # Checksum pulse
+        
+        # Parallel Logic Gates
+        gate_A, gate_B, gate_C = (True and False), not (True and False), (True or False)
+        
+        if not (gate_A == False and gate_B == True and gate_C == True):
+            return None # State Collapse
+            
+        # S = (Wx*F) * (Wy*M) * (Wz*T)
+        S = (self.weights[0] * F) * (self.weights[1] * M) * (self.weights[2] * T) * check
+        return S
+
+    def add_avatar(self, avatar, loc, F, M, T, n):
+        S = self.calculate_existence(avatar, F, M, T, n)
+        if S is not None:
+            self.avatars.append((avatar, loc, S))
+
+    def render(self):
+        fig = plt.figure(figsize=(10, 7))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        for avatar, loc, S in self.avatars:
+            # S determines the 'Size' or 'Presence' of the avatar in the matrix
+            ax.scatter(loc[0], loc[1], loc[2], s=S*10, label=f"{avatar.name} (S:{S:.2f})")
+            ax.text(loc[0], loc[1], loc[2], f" {avatar.name}")
+
+        ax.set_title("3D Universe: Avatars in Weighted Superposition")
+        ax.set_xlabel('Field (X/Lat)')
+        ax.set_ylabel('Mass (Y/Long)')
+        ax.set_zlabel('Time (Z/Elev)')
+        plt.legend()
+        plt.show()
+
+class Avatar:
+    def __init__(self, name, role):
+        self.name = name
+        self.role = role
+
+# --- EXECUTION ---
+# 1. Setup Universe with Weights (Wx, Wy, Wz)
+earth = StoneUniverse(Wx=1.2, Wy=0.8, Wz=1.0)
+
+# 2. Add Avatars with Stone's Law Potentials (F, M, T)
+# Travis: High Field/Energy potential
+earth.add_avatar(Avatar("Travis Stone", "Athlete"), (34.2, -117.2, 1400), F=10, M=5, T=1, n=1)
+# Doctor: High Mass/Node density
+earth.add_avatar(Avatar("Doctor", "Medical"), (40.7, -74.0, 10), F=5, M=10, T=1, n=2)
+
+# 3. Render the Map of Potential Outcomes
+earth.render()
